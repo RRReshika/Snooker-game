@@ -28,6 +28,7 @@ let score = 0; // Deprecated, kept for safety
 let scores = { 1: 0, 2: 0 };
 let currentPlayer = 1;
 let ballsPottedThisTurn = 0;
+let currentBreak = 0; // Track current scoring run
 let foulCommitted = false;
 let currentMode = 1; // 1: Triangle, 2: Random, 3: Practice
 let isAiming = false;
@@ -111,6 +112,7 @@ function setup() {
                         else if (pottedBall.color === 'black') points = 7;
 
                         scores[currentPlayer] += points;
+                        currentBreak += points; // Increment break counter
                     }
                 }
             }
@@ -119,7 +121,7 @@ function setup() {
 }
 
 function draw() {
-    background(10, 12, 16); // Dark cinematic background fallback
+    background(15, 18, 22); // Brighter charcoal/slate base tone
 
     Engine.update(engine);
     checkTurnState();
@@ -168,9 +170,16 @@ function draw() {
     drawTableToTexture();
 
     // Lighting
-    ambientLight(40);
-    pointLight(255, 255, 255, 0, -500, 0); // Overhead main light
-    spotLight(200, 200, 200, 0, -800, 0, 0, 1, 0, PI / 3, 2); // Focused spot
+    ambientLight(60); // Brighter ambient for arena feel
+
+    // Slow cinematic light movement
+    let lightPulse = sin(frameCount * 0.01) * 50;
+    pointLight(255, 255, 255, 0, -600 + lightPulse, 0); // Overhead main light
+
+    // Stage Spotlights
+    spotLight(255, 255, 240, 0, -800, 0, 0, 1, 0, PI / 3.5, 2); // Main table spot
+    spotLight(100, 100, 120, -1000, -500, -500, 1, 0.5, 0.5, PI / 4, 1); // Side fill
+    spotLight(100, 100, 120, 1000, -500, -500, -1, 0.5, 0.5, PI / 4, 1); // Side fill
 
     // Draw Environment (Arena)
     drawArena();
@@ -230,11 +239,29 @@ function draw() {
             p1Panel.classList.remove('inactive-player');
             p2Panel.classList.add('inactive-player');
             p2Panel.classList.remove('active-player');
+
+            // Update Break Counter
+            let b1 = p1Panel.querySelector('.player-break');
+            let b2 = p2Panel.querySelector('.player-break');
+            if (b1 && b2) {
+                b1.innerText = `BREAK ${currentBreak}`;
+                b1.style.opacity = currentBreak > 0 ? 1 : 0;
+                b2.style.opacity = 0;
+            }
         } else {
             p2Panel.classList.add('active-player');
             p2Panel.classList.remove('inactive-player');
             p1Panel.classList.add('inactive-player');
             p1Panel.classList.remove('active-player');
+
+            // Update Break Counter
+            let b1 = p1Panel.querySelector('.player-break');
+            let b2 = p2Panel.querySelector('.player-break');
+            if (b1 && b2) {
+                b2.innerText = `BREAK ${currentBreak}`;
+                b2.style.opacity = currentBreak > 0 ? 1 : 0;
+                b1.style.opacity = 0;
+            }
         }
     }
 
@@ -439,6 +466,7 @@ function setupBalls(mode) {
     scores = { 1: 0, 2: 0 };
     currentPlayer = 1;
     ballsPottedThisTurn = 0;
+    currentBreak = 0;
     foulCommitted = false;
     isShooting = false;
 
@@ -564,6 +592,18 @@ class Cue {
 
         // Aim Line (Only when actively aiming)
         if (this.isAiming) {
+            // Radial Power Halo (Minimal Luxury Style)
+            push();
+            translate(0, BALL_RADIUS - 0.5, 0); // Position on table surface
+            rotateX(PI / 2); // Lay flat
+            noFill();
+            let alpha = map(this.power, 0, this.maxPower, 40, 180);
+            stroke(212, 175, 55, alpha); // Muted Gold
+            strokeWeight(1.5);
+            let haloRadius = (BALL_RADIUS + this.power * 2.5) * 2; // Diameter
+            ellipse(0, 0, haloRadius, haloRadius);
+            pop();
+
             // Power aim line
             let aimColor = lerpColor(color(255, 255, 240), color(100, 255, 255), this.power / this.maxPower);
             stroke(aimColor);
@@ -820,17 +860,31 @@ function checkTurnState() {
     if (!cueBall) isMoving = true;
 
     if (!isMoving) {
-        isShooting = false;
-
         // Turn Logic
         if (ballsPottedThisTurn === 0 || foulCommitted) {
+            if (foulCommitted) {
+                showFeedback("FOUL");
+            } else {
+                showFeedback("MISS");
+            }
+
             // Switch Turn
-            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            setTimeout(() => {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                currentBreak = 0; // Reset break on turn switch
+                showFeedback("TURN SWITCHED");
+            }, 1000);
+        } else {
+            showFeedback("GOOD POT");
+            if (currentBreak > 0) {
+                setTimeout(() => showFeedback("BREAK CONTINUES"), 1500);
+            }
         }
 
         // Reset Turn State
         ballsPottedThisTurn = 0;
         foulCommitted = false;
+        isShooting = false;
     }
 }
 
@@ -913,19 +967,93 @@ function drawTableFrame() {
 }
 
 function drawArena() {
-    // Floor
+    // 1. Arena Floor (Large, grounded plane)
     push();
     translate(0, 200, 0); // Below table
     rotateX(HALF_PI);
     noStroke();
-    fill(10, 10, 12); // Dark floor
-    plane(3000, 3000);
+    fill(20, 22, 26); // Slate grey floor
+    plane(5000, 5000);
     pop();
 
-    // Seating / Walls (Abstract)
+    // 2. Angled Light Blades (Architectural Depth)
+    const bladeCount = 6;
+    const radius = 1800;
+    const intensity = map(sin(frameCount * 0.01), -1, 1, 30, 60); // Breathing intensity
+
+    for (let i = 0; i < bladeCount; i++) {
+        // Asymmetric positioning
+        let angle = (TWO_PI / bladeCount) * i + (i * 0.2);
+        let x = cos(angle) * radius;
+        let z = sin(angle) * radius;
+
+        push();
+        translate(x, 0, z);
+        rotateY(-angle + HALF_PI);
+
+        // Inward Tilt (Asymmetric)
+        let tiltX = map(i, 0, bladeCount, 0.1, 0.3);
+        let tiltZ = map(i, 0, bladeCount, -0.05, 0.05);
+        rotateX(tiltX);
+        rotateZ(tiltZ);
+
+        // Blade Geometry (Tapered effect using two boxes)
+        noStroke();
+        emissiveMaterial(intensity, intensity + 5, intensity + 15);
+
+        // Base (Thicker)
+        push();
+        translate(0, 200, 0);
+        box(80, 600, 20);
+        pop();
+
+        // Top (Slimmer)
+        push();
+        translate(0, -300, 0);
+        box(40, 400, 10);
+        pop();
+
+        // Subtle Surface Glow
+        translate(0, 0, 12);
+        fill(120, 130, 150, 30);
+        plane(60, 1000);
+        pop();
+    }
+
+    // 3. Ambient Haze / Background Glow
     push();
-    translate(0, 0, -1000); // Back wall
-    fill(5, 5, 8);
-    plane(4000, 2000);
+    noStroke();
+    fill(25, 30, 40, 15); // Soft blue-grey haze
+    translate(0, 0, -2000);
+    plane(8000, 4000);
     pop();
+}
+
+function showFeedback(message) {
+    let el = document.getElementById('shot-feedback');
+    if (!el) return;
+
+    if (message === "TURN SWITCHED") {
+        el.innerHTML = `
+            <div class="feedback-text" style="animation: punch-in 0.4s ease-out">
+                <span class="turn">TURN</span>
+                <span class="switched">SWITCHED</span>
+            </div>
+            <div class="feedback-accent"></div>
+        `;
+    } else {
+        el.innerHTML = `
+            <div class="feedback-text standard">${message}</div>
+            <div class="feedback-accent"></div>
+        `;
+    }
+
+    el.style.opacity = 1;
+
+    setTimeout(() => {
+        // Only fade out if the message hasn't changed
+        if (el.innerText.includes(message.split(' ')[0])) {
+            el.style.opacity = 0;
+        }
+    }, 1500);
 }
