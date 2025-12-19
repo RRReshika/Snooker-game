@@ -14,7 +14,7 @@ let world;
 const TABLE_WIDTH = 800;
 const TABLE_HEIGHT = 400;
 const RAIL_WIDTH = 30;
-const POCKET_RADIUS = 18;
+const POCKET_RADIUS = 25; // Increased size
 const BALL_RADIUS = 10;
 
 // Game state
@@ -24,7 +24,11 @@ let pockets = [];
 let cueBall;
 let cue;
 let impacts = [];
-let score = 0;
+let score = 0; // Deprecated, kept for safety
+let scores = { 1: 0, 2: 0 };
+let currentPlayer = 1;
+let ballsPottedThisTurn = 0;
+let foulCommitted = false;
 let currentMode = 1; // 1: Triangle, 2: Random, 3: Practice
 let isAiming = false;
 let isShooting = false;
@@ -74,14 +78,20 @@ function setup() {
                 // Find ball object
                 let ballIndex = balls.findIndex(b => b.body === ballBody);
                 if (ballIndex !== -1) {
+                    let pottedBall = balls[ballIndex];
+
                     // Remove ball
                     World.remove(world, ballBody);
                     balls.splice(ballIndex, 1);
-                    score++;
 
-                    // If cue ball potted, respawn
+                    // Handle Scoring
                     if (ballBody === cueBall.body) {
-                        score--; // Penalty
+                        // FOUL: Cue ball potted
+                        foulCommitted = true;
+                        // Award 4 points to opponent
+                        let opponent = currentPlayer === 1 ? 2 : 1;
+                        scores[opponent] += 4;
+
                         cueBall = null;
                         setTimeout(() => {
                             // Auto-place for smoother gameplay
@@ -89,6 +99,18 @@ function setup() {
                             cueBall = new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2, 'white');
                             balls.push(cueBall);
                         }, 1000);
+                    } else {
+                        // Valid Pot
+                        ballsPottedThisTurn++;
+                        let points = 1; // Default Red
+                        if (pottedBall.color === 'yellow') points = 2;
+                        else if (pottedBall.color === 'green') points = 3;
+                        else if (pottedBall.color === 'brown') points = 4;
+                        else if (pottedBall.color === 'blue') points = 5;
+                        else if (pottedBall.color === 'pink') points = 6;
+                        else if (pottedBall.color === 'black') points = 7;
+
+                        scores[currentPlayer] += points;
                     }
                 }
             }
@@ -101,6 +123,17 @@ function draw() {
 
     Engine.update(engine);
     checkTurnState();
+
+    // Safety Check: Remove balls that fly out of bounds (prevents visual artifacts)
+    for (let i = balls.length - 1; i >= 0; i--) {
+        let b = balls[i];
+        let pos = b.body.position;
+        // If ball is too far from table center (tightened to 700) or fell through floor
+        if (dist(pos.x, pos.y, TABLE_WIDTH / 2, TABLE_HEIGHT / 2) > 700 || pos.y > 1000) {
+            World.remove(world, b.body);
+            balls.splice(i, 1);
+        }
+    }
 
     // Update Camera Rotation (Azimuth)
     let sliderVal = parseFloat(document.getElementById('cam-slider').value);
@@ -183,8 +216,27 @@ function draw() {
     }
 
     // UI Updates
-    let scoreEl = document.getElementById('score-panel');
-    if (scoreEl) scoreEl.innerText = `SCORE: ${score}`;
+    let p1Panel = document.getElementById('player1-panel');
+    let p2Panel = document.getElementById('player2-panel');
+
+    if (p1Panel && p2Panel) {
+        // Update Scores
+        p1Panel.querySelector('.player-score').innerText = scores[1];
+        p2Panel.querySelector('.player-score').innerText = scores[2];
+
+        // Update Active State
+        if (currentPlayer === 1) {
+            p1Panel.classList.add('active-player');
+            p1Panel.classList.remove('inactive-player');
+            p2Panel.classList.add('inactive-player');
+            p2Panel.classList.remove('active-player');
+        } else {
+            p2Panel.classList.add('active-player');
+            p2Panel.classList.remove('inactive-player');
+            p1Panel.classList.add('inactive-player');
+            p1Panel.classList.remove('active-player');
+        }
+    }
 
     let modeName = currentMode === 1 ? "STANDARD" : currentMode === 2 ? "RANDOM" : "PRACTICE";
     let modeEl = document.getElementById('mode-panel');
@@ -202,7 +254,7 @@ function mouseWheel(event) {
     // Horizontal scroll -> Rotate
     if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
         targetCamAngle += event.deltaX * 0.001;
-        targetCamAngle = constrain(targetCamAngle, -1.5, 1.5);
+        targetCamAngle = constrain(targetCamAngle, -PI, PI);
         document.getElementById('cam-slider').value = targetCamAngle;
     }
     // Vertical scroll -> Tilt
@@ -286,11 +338,18 @@ function drawTableToTexture() {
     // Right
     pg.rect(TABLE_WIDTH - RAIL_WIDTH / 2, 0, RAIL_WIDTH / 2, TABLE_HEIGHT);
 
-    // Draw Pockets (Seamless, dark with inner glow)
+    // Draw Pockets (Seamless, dark with inner glow and rim)
     for (let p of pockets) {
-        // Outer shadow
-        pg.fill(5, 5, 5);
+        // Outer shadow/Rim
+        pg.fill(10, 10, 12);
+        pg.circle(p.x, p.y, POCKET_RADIUS * 2.4);
+
+        // Metallic Rim Detail
+        pg.stroke(50);
+        pg.strokeWeight(2);
+        pg.noFill();
         pg.circle(p.x, p.y, POCKET_RADIUS * 2.2);
+        pg.noStroke();
 
         // Inner void
         pg.fill(0);
@@ -299,6 +358,7 @@ function drawTableToTexture() {
         // Soft inner glow
         let glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, POCKET_RADIUS);
         glow.addColorStop(0, 'rgba(0, 0, 0, 1)');
+        glow.addColorStop(0.8, 'rgba(0, 0, 0, 0.8)');
         glow.addColorStop(1, 'rgba(20, 50, 30, 0.2)');
         ctx.fillStyle = glow;
         ctx.beginPath();
@@ -376,6 +436,10 @@ function setupBalls(mode) {
     }
     balls = [];
     score = 0;
+    scores = { 1: 0, 2: 0 };
+    currentPlayer = 1;
+    ballsPottedThisTurn = 0;
+    foulCommitted = false;
     isShooting = false;
 
     // Create Cue Ball
@@ -498,12 +562,8 @@ class Cue {
         translate(pos.x - TABLE_WIDTH / 2, -BALL_RADIUS, pos.y - TABLE_HEIGHT / 2);
         rotateY(-this.angle); // p5 3D rotation is Y-axis for horizontal
 
-        // Aim Line
-        if (!this.isAiming) {
-            stroke(255, 255, 255, 50);
-            strokeWeight(1);
-            line(0, 0, 0, 100, 0, 0); // Simple guide
-        } else {
+        // Aim Line (Only when actively aiming)
+        if (this.isAiming) {
             // Power aim line
             let aimColor = lerpColor(color(255, 255, 240), color(100, 255, 255), this.power / this.maxPower);
             stroke(aimColor);
@@ -561,7 +621,11 @@ class Ball {
         translate(pos.x - TABLE_WIDTH / 2, -BALL_RADIUS, pos.y - TABLE_HEIGHT / 2);
         noStroke();
 
-        // Ball Color
+        // Ball Material (Shiny)
+        specularMaterial(255); // White highlight
+        shininess(50); // Glossy finish
+
+        // Ball Color (Diffuse)
         if (this.color === 'white') fill(240);
         else if (this.color === 'red') fill(200, 40, 40);
         else fill(this.color);
@@ -576,6 +640,23 @@ class Ball {
             beginShape();
             for (let i = 0; i < this.trail.length; i++) {
                 let t = this.trail[i];
+
+                // Skip if segment is too long (teleport artifact)
+                if (i > 0) {
+                    let prev = this.trail[i - 1];
+                    if (dist(t.x, t.y, prev.x, prev.y) > 100) {
+                        endShape();
+                        beginShape();
+                    }
+                }
+
+                // Strict Clipping: Do not draw if point is outside table bounds (plus small margin)
+                if (t.x < -50 || t.x > TABLE_WIDTH + 50 || t.y < -50 || t.y > TABLE_HEIGHT + 50) {
+                    endShape();
+                    beginShape();
+                    continue;
+                }
+
                 let alpha = map(i, 0, this.trail.length, 0, 100);
 
                 if (this.color === 'white') stroke(255, 255, 255, alpha);
@@ -740,6 +821,16 @@ function checkTurnState() {
 
     if (!isMoving) {
         isShooting = false;
+
+        // Turn Logic
+        if (ballsPottedThisTurn === 0 || foulCommitted) {
+            // Switch Turn
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+        }
+
+        // Reset Turn State
+        ballsPottedThisTurn = 0;
+        foulCommitted = false;
     }
 }
 

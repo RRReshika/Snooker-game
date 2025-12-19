@@ -25,33 +25,131 @@ body {
     pointer-events: none;
 }
 
-#score-panel,
-#mode-panel,
-#controls-hint {
+.player-panel {
     position: absolute;
-    font-size: 14px;
-    letter-spacing: 2px;
-    opacity: 0.7;
-    text-transform: uppercase;
-    font-weight: 300;
+    top: 30px;
+    padding: 10px;
+    background: #000;
+    border: 4px solid #444;
+    image-rendering: pixelated;
+    transition: all 0.2s steps(4);
 }
 
-#score-panel {
-    top: 30px;
+#player1-panel {
     left: 40px;
 }
 
-#mode-panel {
-    top: 30px;
+#player2-panel {
     right: 40px;
 }
 
+/* Pixel Border Effect */
+.player-panel::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 4px solid #222;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.active-player {
+    border-color: #ffd700;
+    transform: scale(1.05);
+}
+
+.active-player::after {
+    border-color: #aa8800;
+}
+
+.active-player .player-score {
+    color: #ffd700;
+}
+
+.active-player .player-name {
+    color: #fff;
+}
+
+/* Active Marker (Pixel Arrow) */
+.active-player::before {
+    content: '▶';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    color: #ffd700;
+    animation: blink 0.5s steps(2) infinite;
+}
+
+#player1-panel.active-player::before {
+    right: -30px;
+}
+
+#player2-panel.active-player::before {
+    left: -30px;
+    transform: translateY(-50%) rotate(180deg);
+}
+
+@keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
+
+.inactive-player {
+    opacity: 0.4;
+    filter: grayscale(1);
+}
+
+.player-name {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    letter-spacing: 0;
+    margin-bottom: 10px;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.player-score {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    font-weight: normal;
+    color: #fff;
+    line-height: 1;
+}
+
+#mode-panel {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+#status-panel {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
 #controls-hint {
-    bottom: 60px;
+    top: 10px;
     width: 100%;
     text-align: center;
-    font-size: 12px;
+    font-size: 10px;
     opacity: 0.5;
+    letter-spacing: 1px;
 }
 
 #camera-controls {
