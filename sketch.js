@@ -34,6 +34,8 @@ let currentMode = 1; // 1: Triangle, 2: Random, 3: Practice
 let isAiming = false;
 let isShooting = false;
 let isPlacingCueBall = true;
+let gameRulesMode = 'STANDARD'; // 'STANDARD' or 'BEGINNER'
+let uiActive = false; // Flag to lock game input during UI interaction
 
 let tableGraphics;
 let camAngle = 0;
@@ -41,6 +43,14 @@ let targetCamAngle = 0;
 let camPhi = 0.8; // Elevation angle (radians)
 let targetCamPhi = 0.8;
 let camRadius = 900;
+
+// Smart Camera Snap State
+const DEFAULT_CAM_ANGLE = 0;
+const DEFAULT_CAM_PHI = 0.8;
+let isAutoSnapping = false;
+let snapPending = false;
+let snapStartTime = 0;
+const SNAP_DELAY = 1000; // 1 second delay before snapping starts
 
 function setup() {
     const canvas = createCanvas(windowWidth, windowHeight, WEBGL);
@@ -64,6 +74,21 @@ function setup() {
     setupBalls(1);
 
     cue = new Cue();
+
+    // Initialize Rules UI
+    updateRulesUI();
+
+    // Click outside to close dropdown
+    window.addEventListener('click', (e) => {
+        let container = document.getElementById('rules-dropdown-container');
+        let content = document.getElementById('rules-content');
+        if (container && !container.contains(e.target)) {
+            if (content && !content.classList.contains('hidden')) {
+                content.classList.add('hidden');
+                uiActive = false; // Restore input when closing
+            }
+        }
+    });
 
     // Collision Event
     Events.on(engine, 'collisionStart', function (event) {
@@ -89,9 +114,13 @@ function setup() {
                     if (ballBody === cueBall.body) {
                         // FOUL: Cue ball potted
                         foulCommitted = true;
-                        // Award 4 points to opponent
-                        let opponent = currentPlayer === 1 ? 2 : 1;
-                        scores[opponent] += 4;
+
+                        if (gameRulesMode === 'STANDARD') {
+                            // Award 4 points to opponent in Standard Mode
+                            let opponent = currentPlayer === 1 ? 2 : 1;
+                            scores[opponent] += 4;
+                        }
+                        // In Beginner Mode, just switch turn (handled in checkTurnState)
 
                         cueBall = null;
                         setTimeout(() => {
@@ -139,17 +168,41 @@ function draw() {
 
     // Update Camera Rotation (Azimuth)
     let sliderVal = parseFloat(document.getElementById('cam-slider').value);
-    if (abs(sliderVal - targetCamAngle) > 0.01) {
+    if (!isAutoSnapping && abs(sliderVal - targetCamAngle) > 0.01) {
         targetCamAngle = sliderVal;
+        snapPending = false; // Cancel snap if user moves slider
     }
     camAngle = lerp(camAngle, targetCamAngle, 0.1);
 
     // Update Camera Tilt (Elevation)
     let tiltVal = parseFloat(document.getElementById('tilt-slider').value);
-    if (abs(tiltVal - targetCamPhi) > 0.01) {
+    if (!isAutoSnapping && abs(tiltVal - targetCamPhi) > 0.01) {
         targetCamPhi = tiltVal;
+        snapPending = false; // Cancel snap if user moves slider
     }
     camPhi = lerp(camPhi, targetCamPhi, 0.1);
+
+    // Smart Camera Snap Logic
+    if (snapPending && millis() - snapStartTime > SNAP_DELAY) {
+        isAutoSnapping = true;
+        snapPending = false;
+    }
+
+    if (isAutoSnapping) {
+        targetCamAngle = lerp(targetCamAngle, DEFAULT_CAM_ANGLE, 0.05);
+        targetCamPhi = lerp(targetCamPhi, DEFAULT_CAM_PHI, 0.05);
+
+        // Sync Sliders
+        document.getElementById('cam-slider').value = targetCamAngle;
+        document.getElementById('tilt-slider').value = targetCamPhi;
+
+        // Stop snapping when close enough
+        if (abs(targetCamAngle - DEFAULT_CAM_ANGLE) < 0.001 && abs(targetCamPhi - DEFAULT_CAM_PHI) < 0.001) {
+            targetCamAngle = DEFAULT_CAM_ANGLE;
+            targetCamPhi = DEFAULT_CAM_PHI;
+            isAutoSnapping = false;
+        }
+    }
 
     // Spherical to Cartesian Conversion
     // X = r * sin(phi) * sin(theta)
@@ -278,6 +331,10 @@ function draw() {
 }
 
 function mouseWheel(event) {
+    // Cancel any active or pending snap on user interaction
+    isAutoSnapping = false;
+    snapPending = false;
+
     // Horizontal scroll -> Rotate
     if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
         targetCamAngle += event.deltaX * 0.001;
@@ -308,12 +365,19 @@ function keyPressed() {
     }
 }
 
-function mousePressed() {
-    // Check if mouse is within canvas bounds (simple check)
-    if (mouseY > height - 50) return; // Assume bottom area is UI/Slider
+function mousePressed(event) {
+    // 1. UI Interaction Lock
+    if (uiActive || isUIBlocking(event)) {
+        // If we clicked on UI, ensure uiActive is true to block subsequent game logic
+        if (isUIBlocking(event)) uiActive = true;
+        return;
+    }
 
     let mousePos = getMouseOnTable();
     if (!mousePos) return;
+
+    // 2. Table-bound interaction check
+    if (!isMouseOnTable(mousePos)) return;
 
     // Check if placing cue ball
     if (isPlacingCueBall) {
@@ -337,8 +401,45 @@ function mousePressed() {
 
 function mouseReleased() {
     if (cue && cue.isAiming) {
-        cue.shoot();
+        // Only trigger shot if UI is not active
+        // We don't check isMouseOnTable here because pulling back the cue
+        // often moves the mouse off the table bounds.
+        if (!uiActive) {
+            cue.shoot();
+        } else {
+            // Cancel shot if UI became active (e.g. clicked a button while aiming)
+            cue.isAiming = false;
+            cue.power = 0;
+        }
     }
+    // Note: uiActive is reset by specific UI close actions or click-outside
+}
+
+function isUIBlocking(event) {
+    // Check if rules dropdown is open
+    let rulesContent = document.getElementById('rules-content');
+    if (rulesContent && !rulesContent.classList.contains('hidden')) {
+        // If clicking inside the dropdown, block game input
+        let container = document.getElementById('rules-dropdown-container');
+        if (container && container.contains(event.target)) return true;
+    }
+
+    // Check if clicking on other UI elements
+    const uiIds = ['rules-dropdown-container', 'game-container-ui']; // Add other UI container IDs if needed
+    for (let id of uiIds) {
+        let el = document.getElementById(id);
+        if (el && el.contains(event.target) && event.target.tagName !== 'CANVAS') return true;
+    }
+
+    return false;
+}
+
+function isMouseOnTable(pos) {
+    // Add a buffer (RAIL_WIDTH) to allow clicking on the rim/rail to activate aiming
+    // This is crucial when the cue ball is tucked against the cushion.
+    let buffer = RAIL_WIDTH;
+    return pos.x >= -buffer && pos.x <= TABLE_WIDTH + buffer &&
+        pos.y >= -buffer && pos.y <= TABLE_HEIGHT + buffer;
 }
 
 function drawTableToTexture() {
@@ -391,6 +492,15 @@ function drawTableToTexture() {
         ctx.beginPath();
         ctx.arc(p.x, p.y, POCKET_RADIUS, 0, TWO_PI);
         ctx.fill();
+
+        // Beginner Mode: Pocket Highlighting
+        if (gameRulesMode === 'BEGINNER') {
+            pg.stroke(212, 175, 55, 100); // Muted Gold
+            pg.strokeWeight(1);
+            pg.noFill();
+            pg.circle(p.x, p.y, POCKET_RADIUS * 2.1 + sin(frameCount * 0.1) * 2);
+            pg.noStroke();
+        }
     }
 
     // Draw D-Zone Line
@@ -611,8 +721,10 @@ class Cue {
             line(0, 0, 0, -this.power * 5, 0, 0); // Pull back visual
 
             // Forward projection
-            stroke(255, 255, 255, 30);
-            line(0, 0, 0, 500, 0, 0);
+            let guideAlpha = gameRulesMode === 'BEGINNER' ? 80 : 30;
+            let guideLength = gameRulesMode === 'BEGINNER' ? 800 : 500;
+            stroke(255, 255, 255, guideAlpha);
+            line(0, 0, 0, guideLength, 0, 0);
         }
 
         // Cue Stick
@@ -863,7 +975,11 @@ function checkTurnState() {
         // Turn Logic
         if (ballsPottedThisTurn === 0 || foulCommitted) {
             if (foulCommitted) {
-                showFeedback("FOUL");
+                if (gameRulesMode === 'BEGINNER') {
+                    showFeedback("FOUL – TURN SWITCHED");
+                } else {
+                    showFeedback("FOUL");
+                }
             } else {
                 showFeedback("MISS");
             }
@@ -885,6 +1001,10 @@ function checkTurnState() {
         ballsPottedThisTurn = 0;
         foulCommitted = false;
         isShooting = false;
+
+        // Trigger Smart Camera Snap
+        snapPending = true;
+        snapStartTime = millis();
     }
 }
 
@@ -1056,4 +1176,51 @@ function showFeedback(message) {
             el.style.opacity = 0;
         }
     }, 1500);
+}
+
+function toggleRules() {
+    gameRulesMode = gameRulesMode === 'STANDARD' ? 'BEGINNER' : 'STANDARD';
+    updateRulesUI();
+
+    // Immediate feedback
+    showFeedback(`MODE: ${gameRulesMode}`);
+}
+
+function toggleRulesDropdown() {
+    let content = document.getElementById('rules-content');
+    if (content) {
+        let isOpening = content.classList.contains('hidden');
+        content.classList.toggle('hidden');
+        uiActive = isOpening; // Set flag based on new state
+    }
+}
+
+function updateRulesUI() {
+    let header = document.getElementById('rules-header');
+    let list = document.getElementById('rules-list');
+    let btn = document.getElementById('rules-mode-btn');
+
+    if (!header || !list || !btn) return;
+
+    header.innerText = `RULES: ${gameRulesMode} ▾`;
+    btn.innerText = `SWITCH TO ${gameRulesMode === 'STANDARD' ? 'BEGINNER' : 'STANDARD'}`;
+
+    let rules = [];
+    if (gameRulesMode === 'BEGINNER') {
+        rules = [
+            "Simplified fouls (no point penalties)",
+            "Enhanced aiming guides enabled",
+            "Pocket highlighting active",
+            "Cue ball auto-respawns in D-Zone"
+        ];
+    } else {
+        rules = [
+            "Standard snooker foul penalties (min 4 pts)",
+            "Wrong ball first is a foul",
+            "Reduced visual assists for authentic feel",
+            "Full break counter tracking"
+        ];
+    }
+
+    list.innerHTML = rules.map(r => `<li>${r}</li>`).join('');
 }

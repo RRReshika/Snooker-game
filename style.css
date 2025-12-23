@@ -273,6 +273,99 @@ body {
     }
 }
 
+#rules-dropdown-container {
+    position: absolute;
+    top: 40px;
+    right: 220px;
+    /* Offset from Player 2 panel */
+    z-index: 110;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-family: 'Montserrat', sans-serif;
+}
+
+#rules-header {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    pointer-events: auto;
+}
+
+#rules-header:hover {
+    color: #d4af37;
+    border-bottom-color: rgba(212, 175, 55, 0.6);
+}
+
+#rules-content {
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 15px;
+    width: 200px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+#rules-content.hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+#rules-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+}
+
+#rules-list li {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 8px;
+    line-height: 1.4;
+    position: relative;
+    padding-left: 12px;
+}
+
+#rules-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #d4af37;
+}
+
+#rules-mode-btn {
+    width: 100%;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #d4af37;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+#rules-mode-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: #d4af37;
+}
+
 #mode-panel {
     position: absolute;
     top: 40px;

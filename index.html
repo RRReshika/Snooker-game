@@ -27,6 +27,15 @@
             <div class="player-break">BREAK 0</div>
         </div>
         <div id="shot-feedback"></div>
+        <div id="rules-dropdown-container">
+            <div id="rules-header" onclick="toggleRulesDropdown()">RULES: STANDARD ▾</div>
+            <div id="rules-content" class="hidden">
+                <ul id="rules-list">
+                    <!-- Dynamic Content -->
+                </ul>
+                <button id="rules-mode-btn" onclick="toggleRules()">SWITCH TO BEGINNER</button>
+            </div>
+        </div>
         <div id="mode-panel">MODE: STANDARD</div>
         <div id="status-panel">STATUS: AIMING</div>
         <div id="controls-hint">1-3: Modes | Click & Drag: Aim/Shoot | R: Reset | Scroll: Rotate Camera</div>
