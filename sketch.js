@@ -36,6 +36,17 @@ let isShooting = false;
 let isPlacingCueBall = true;
 let gameRulesMode = 'STANDARD'; // 'STANDARD' or 'BEGINNER'
 let uiActive = false; // Flag to lock game input during UI interaction
+let framesCompleted = 0;
+let totalShots = 0;
+
+// Visual Replay State
+let lastShotRecording = [];
+let isRecording = false;
+let isReplaying = false;
+let replayFrameIndex = 0;
+
+// Slow-Motion Toggle State
+let slowMotionEnabled = false;
 
 let tableGraphics;
 let camAngle = 0;
@@ -142,6 +153,11 @@ function setup() {
 
                         scores[currentPlayer] += points;
                         currentBreak += points; // Increment break counter
+
+                        // Update Dispenser if object ball potted
+                        if (pottedBall.color !== 'white') {
+                            removeBallFromDispenser(pottedBall.color);
+                        }
                     }
                 }
             }
@@ -152,8 +168,17 @@ function setup() {
 function draw() {
     background(15, 18, 22); // Brighter charcoal/slate base tone
 
-    Engine.update(engine);
-    checkTurnState();
+    if (!isReplaying) {
+        Engine.update(engine);
+        checkTurnState();
+
+        if (isRecording) {
+            recordFrame();
+        }
+    } else {
+        // Just increment frame index, drawing happens later in the loop
+        updatePlaybackIndex();
+    }
 
     // Safety Check: Remove balls that fly out of bounds (prevents visual artifacts)
     for (let i = balls.length - 1; i >= 0; i--) {
@@ -219,6 +244,11 @@ function draw() {
 
     camera(camX, camY, camZ, 0, 0, 0, 0, 1, 0);
 
+    // Update Cue logic before rendering table texture to ensure synchronization
+    if (cueBall && !isShooting && !isReplaying) {
+        cue.update();
+    }
+
     // Render 2D Table to Texture
     drawTableToTexture();
 
@@ -255,14 +285,19 @@ function draw() {
     pop();
 
     // Draw Balls in 3D
-    drawBalls3D();
+    if (!isReplaying) {
+        drawBalls3D();
+    } else {
+        drawReplayBalls3D();
+    }
 
     // Draw Impacts
-    drawImpacts3D();
+    if (!isReplaying) {
+        drawImpacts3D();
+    }
 
     // Draw Cue
-    if (cueBall && !isShooting) {
-        cue.update();
+    if (cueBall && !isShooting && !isReplaying) {
         cue.show3D();
     }
 
@@ -328,6 +363,15 @@ function draw() {
         else if (isShooting) statusEl.innerText = "STATUS: SHOOTING";
         else statusEl.innerText = "STATUS: AIMING";
     }
+
+    // Match Progress UI Updates
+    let frameEl = document.getElementById('frame-count');
+    let ballsEl = document.getElementById('balls-remaining');
+    let shotEl = document.getElementById('shot-count');
+
+    if (frameEl) frameEl.innerText = framesCompleted + 1;
+    if (ballsEl) ballsEl.innerText = max(0, balls.length - (cueBall ? 1 : 0));
+    if (shotEl) shotEl.innerText = totalShots;
 }
 
 function mouseWheel(event) {
@@ -501,6 +545,61 @@ function drawTableToTexture() {
             pg.circle(p.x, p.y, POCKET_RADIUS * 2.1 + sin(frameCount * 0.1) * 2);
             pg.noStroke();
         }
+
+        // Pocket Highlight Assistance (New Feature)
+        // Subtly highlight the pocket the player is currently aiming towards
+        if (cue.isAiming && cueBall) {
+            let shotDir = (cue.angle + PI);
+            // Normalize shotDir to [-PI, PI] to match atan2
+            shotDir = atan2(sin(shotDir), cos(shotDir));
+
+            let dx = p.x - cueBall.body.position.x;
+            let dy = p.y - cueBall.body.position.y;
+            let angleToPocket = atan2(dy, dx);
+
+            let diff = abs(shotDir - angleToPocket);
+            if (diff > PI) diff = TWO_PI - diff;
+
+            // Increased cone to approx 35 degrees (0.6 rad) for easier identification
+            if (diff < 0.6) {
+                let intensity = map(diff, 0, 0.6, 1, 0);
+                let pulse = sin(frameCount * 0.2) * 5;
+                // High visibility alpha
+                let alpha = intensity * (200 + 55 * sin(frameCount * 0.2));
+
+                ctx.save();
+
+                // Ensure we draw within the table bounds if possible
+                // Offset the highlight slightly towards the table center to avoid clipping
+                let centerX = TABLE_WIDTH / 2;
+                let centerY = TABLE_HEIGHT / 2;
+                let offsetX = (centerX - p.x) * 0.1;
+                let offsetY = (centerY - p.y) * 0.1;
+
+                // 1. Stronger outer glow
+                let glow = ctx.createRadialGradient(p.x + offsetX, p.y + offsetY, POCKET_RADIUS, p.x + offsetX, p.y + offsetY, POCKET_RADIUS * 3);
+                glow.addColorStop(0, `rgba(212, 175, 55, ${alpha / 255})`);
+                glow.addColorStop(1, 'rgba(212, 175, 55, 0)');
+
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(p.x + offsetX, p.y + offsetY, POCKET_RADIUS * 6, 0, TWO_PI);
+                ctx.fill();
+
+                // 2. Clearer inner ring
+                pg.stroke(255, 255, 255, alpha * 0.9);
+                pg.strokeWeight(3);
+                pg.noFill();
+                pg.circle(p.x, p.y, POCKET_RADIUS * 2.2 + pulse);
+
+                // 3. Solid center point for absolute confirmation
+                pg.fill(255, 255, 255, alpha);
+                pg.noStroke();
+                pg.circle(p.x, p.y, 8);
+
+                ctx.restore();
+            }
+        }
     }
 
     // Draw D-Zone Line
@@ -579,6 +678,7 @@ function setupBalls(mode) {
     currentBreak = 0;
     foulCommitted = false;
     isShooting = false;
+    totalShots = 0; // Reset shots for new frame/mode
 
     // Create Cue Ball
     cueBall = new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2, 'white');
@@ -627,6 +727,12 @@ function setupBalls(mode) {
             balls.push(new Ball(x, y, 'red'));
         }
     }
+
+    // Initialize Dispenser Tube
+    let objectBallColors = balls
+        .filter(b => b.color !== 'white')
+        .map(b => b.color);
+    initDispenser(objectBallColors);
 }
 
 function drawBalls3D() {
@@ -667,6 +773,10 @@ class Cue {
     shoot() {
         if (!this.isAiming) return;
 
+        // Start Recording
+        lastShotRecording = [];
+        isRecording = true;
+
         let force = Vector.create(cos(this.angle + PI) * this.power * 0.002, sin(this.angle + PI) * this.power * 0.002);
         Body.applyForce(cueBall.body, cueBall.body.position, force);
 
@@ -676,6 +786,7 @@ class Cue {
         this.isAiming = false;
         this.power = 0;
         isShooting = true;
+        totalShots++;
 
         // Reset shooting flag after some time or when balls stop
         // isShooting will be reset in checkTurnState() when balls stop moving
@@ -769,21 +880,7 @@ class Ball {
             this.trail.shift();
         }
 
-        push();
-        translate(pos.x - TABLE_WIDTH / 2, -BALL_RADIUS, pos.y - TABLE_HEIGHT / 2);
-        noStroke();
-
-        // Ball Material (Shiny)
-        specularMaterial(255); // White highlight
-        shininess(50); // Glossy finish
-
-        // Ball Color (Diffuse)
-        if (this.color === 'white') fill(240);
-        else if (this.color === 'red') fill(200, 40, 40);
-        else fill(this.color);
-
-        sphere(this.r);
-        pop();
+        renderBall3D(pos.x, pos.y, this.color, this.r);
 
         // Draw Trail (2D lines in 3D space)
         if (this.trail.length > 1) {
@@ -1001,10 +1098,20 @@ function checkTurnState() {
         ballsPottedThisTurn = 0;
         foulCommitted = false;
         isShooting = false;
+        isRecording = false; // Stop recording when balls stop
 
         // Trigger Smart Camera Snap
         snapPending = true;
         snapStartTime = millis();
+
+        // Check for Frame Completion
+        if (balls.length === 1 && cueBall) {
+            showFeedback("FRAME COMPLETED");
+            framesCompleted++;
+            setTimeout(() => {
+                setupBalls(currentMode);
+            }, 2000);
+        }
     }
 }
 
@@ -1223,4 +1330,200 @@ function updateRulesUI() {
     }
 
     list.innerHTML = rules.map(r => `<li>${r}</li>`).join('');
+}
+function recordFrame() {
+    let frame = {
+        balls: balls.map(b => ({
+            x: b.body.position.x,
+            y: b.body.position.y,
+            color: b.color
+        }))
+    };
+    lastShotRecording.push(frame);
+}
+
+function playVisualReplay() {
+    if (lastShotRecording.length === 0) {
+        showFeedback("NO SHOT TO REPLAY");
+        return;
+    }
+    if (isShooting || isReplaying) return;
+
+    isReplaying = true;
+    replayFrameIndex = 0;
+    showFeedback("REPLAYING SHOT");
+}
+
+function updatePlaybackIndex() {
+    if (replayFrameIndex >= lastShotRecording.length) {
+        isReplaying = false;
+        showFeedback("REPLAY FINISHED");
+        return;
+    }
+    replayFrameIndex++;
+}
+
+function drawReplayBalls3D() {
+    // Safety check for index
+    let idx = min(replayFrameIndex, lastShotRecording.length - 1);
+    let frame = lastShotRecording[idx];
+    if (!frame) return;
+
+    for (let b of frame.balls) {
+        renderBall3D(b.x, b.y, b.color, BALL_RADIUS);
+    }
+}
+
+function renderBall3D(x, y, ballColor, r) {
+    push();
+    translate(x - TABLE_WIDTH / 2, -BALL_RADIUS, y - TABLE_HEIGHT / 2);
+
+    // Explicitly reset styles to prevent bleeding
+    noStroke();
+
+    // Ball Material (Shiny)
+    specularMaterial(255); // White highlight
+    shininess(50); // Glossy finish
+
+    // Ball Color (Diffuse)
+    if (ballColor === 'white') fill(240);
+    else if (ballColor === 'red') fill(200, 40, 40);
+    else fill(ballColor);
+
+    sphere(r);
+    pop();
+}
+
+function initDispenser(colors) {
+    let tube = document.getElementById('ball-dispenser-tube');
+    if (!tube) return;
+    tube.innerHTML = '';
+    for (let color of colors) {
+        let ball = document.createElement('div');
+        ball.className = `dispenser-ball ball-${color}`;
+        tube.appendChild(ball);
+    }
+}
+
+function removeBallFromDispenser(color) {
+    let tube = document.getElementById('ball-dispenser-tube');
+    if (!tube) return;
+    let ballsInTube = tube.getElementsByClassName(`ball-${color}`);
+
+    // Find the first ball of this color
+    let targetBall = null;
+    for (let i = ballsInTube.length - 1; i >= 0; i--) {
+        if (!ballsInTube[i].classList.contains('animating-out')) {
+            targetBall = ballsInTube[i];
+            break;
+        }
+    }
+
+    if (!targetBall) return;
+
+    // 1. Capture initial position
+    let rect = targetBall.getBoundingClientRect();
+    let startX = rect.left + 30; // Offset to the right to fall parallel to the stack
+    let startY = rect.top;
+
+    // 2. Create clone for animation
+    let clone = targetBall.cloneNode(true);
+    clone.classList.add('dispenser-ball-clone');
+    clone.style.position = 'fixed';
+    clone.style.left = startX + 'px';
+    clone.style.top = startY + 'px';
+    clone.style.zIndex = '1000';
+    clone.style.visibility = 'visible';
+    clone.style.opacity = '1';
+    clone.style.display = 'block';
+    document.body.appendChild(clone);
+
+    // 3. Smoothly collapse the space in the tube
+    targetBall.classList.add('animating-out');
+    targetBall.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    targetBall.style.height = '0';
+    targetBall.style.margin = '0';
+    targetBall.style.opacity = '0';
+    targetBall.style.padding = '0';
+
+    // Remove from DOM after the collapse animation
+    setTimeout(() => {
+        if (targetBall && targetBall.parentNode) {
+            targetBall.remove();
+        }
+    }, 600);
+
+    // 4. Animation Physics
+    let x = startX;
+    let y = startY;
+    let vx = 3.0; // Horizontal speed for the roll
+    let vy = -2;
+    let gravity = 0.7;
+    let restitution = 0.5; // Lower restitution for a quicker transition to roll
+    let bounces = 0;
+    let maxBounces = 1; // Exactly one bounce
+    let currentScale = 1.0;
+    let targetScale = 1.25;
+
+    let floor = window.innerHeight;
+    let isRolling = false;
+
+    function animate() {
+        if (currentScale < targetScale) {
+            currentScale += 0.015;
+        }
+
+        let ballHeight = 18 * currentScale;
+
+        if (!isRolling) {
+            vy += gravity;
+            y += vy;
+            x += vx;
+
+            // Bounce logic
+            if (y + ballHeight > floor) {
+                y = floor - ballHeight;
+                vy = -vy * restitution;
+                bounces++;
+
+                if (bounces > maxBounces) {
+                    isRolling = true;
+                    vy = 0;
+                }
+            }
+        } else {
+            // Roll logic
+            x += vx;
+            y = floor - ballHeight; // Keep it on the floor
+        }
+
+        // Apply translation, scaling, and rotation
+        clone.style.transform = `translate(${x - startX}px, ${y - startY}px) scale(${currentScale}) rotate(${x * 8}deg)`;
+
+        // Exit screen check
+        if (x < window.innerWidth + 50) {
+            requestAnimationFrame(animate);
+        } else {
+            clone.remove();
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
+// Slow-Motion Toggle Function
+function toggleSlowMotion() {
+    slowMotionEnabled = !slowMotionEnabled;
+
+    let btn = document.getElementById('slowmo-btn');
+
+    if (slowMotionEnabled) {
+        engine.timing.timeScale = 0.5; // 50% speed
+        btn.textContent = 'SLOW-MO: ON';
+        btn.classList.add('active');
+    } else {
+        engine.timing.timeScale = 1.0; // Normal speed
+        btn.textContent = 'SLOW-MO: OFF';
+        btn.classList.remove('active');
+    }
 }
