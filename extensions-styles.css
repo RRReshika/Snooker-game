@@ -1,0 +1,330 @@
+/* ===================================
+   GLOBAL & RESET
+   =================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: #0d1117;
+    color: #e8e8e8;
+    line-height: 1.6;
+}
+
+/* ===================================
+   HOME BUTTON
+   =================================== */
+
+#home-button {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(184, 154, 98, 0.2);
+    color: #b89a62;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+#home-button:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: #b89a62;
+    color: #d4af69;
+    transform: translateX(-3px);
+}
+
+#home-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ===================================
+   TOP NAVIGATION
+   =================================== */
+
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 3rem;
+    background: rgba(13, 17, 23, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(184, 154, 98, 0.1);
+    z-index: 1000;
+}
+
+.nav-link {
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #b89a62;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #d4af69;
+}
+
+.nav-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    color: #f5f5f0;
+}
+
+/* ===================================
+   PAGE HEADER
+   =================================== */
+
+.page-header {
+    padding: 140px 3rem 80px;
+    text-align: center;
+    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+    border-bottom: 1px solid rgba(184, 154, 98, 0.1);
+}
+
+.page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: #f5f5f0;
+    margin-bottom: 1rem;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: #a0a0a0;
+    letter-spacing: 0.05em;
+}
+
+/* ===================================
+   EXTENSIONS CONTAINER
+   =================================== */
+
+.extensions-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 80px 3rem;
+}
+
+/* ===================================
+   EXTENSION SECTIONS
+   =================================== */
+
+.extension-section {
+    margin-bottom: 4rem;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(184, 154, 98, 0.1);
+    transition: all 0.3s ease;
+}
+
+.extension-section:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(184, 154, 98, 0.2);
+}
+
+.extension-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(184, 154, 98, 0.15);
+}
+
+.extension-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    font-weight: 300;
+    color: #b89a62;
+    opacity: 0.4;
+    line-height: 1;
+}
+
+.extension-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: #f5f5f0;
+}
+
+.extension-content {
+    padding-left: 1rem;
+}
+
+.content-subtitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #b89a62;
+    text-transform: uppercase;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.content-subtitle:first-child {
+    margin-top: 0;
+}
+
+.extension-content > p {
+    font-size: 1.05rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: #c8c8c8;
+    margin-bottom: 1.5rem;
+}
+
+.details-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1rem;
+}
+
+.details-list li {
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: #a0a0a0;
+    padding-left: 2rem;
+    position: relative;
+    margin-bottom: 0.8rem;
+}
+
+.details-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #b89a62;
+    font-weight: 400;
+}
+
+.details-list li strong {
+    color: #f5f5f0;
+    font-weight: 400;
+}
+
+/* ===================================
+   FOOTER
+   =================================== */
+
+.page-footer {
+    padding: 3rem;
+    background: #0a0a0a;
+    border-top: 1px solid rgba(184, 154, 98, 0.1);
+}
+
+.footer-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-content p {
+    font-size: 0.85rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.footer-nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.footer-link {
+    font-size: 0.85rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: #b89a62;
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+
+@media (max-width: 768px) {
+    .top-nav {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .page-header {
+        padding: 100px 1.5rem 60px;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1rem;
+    }
+    
+    .extensions-container {
+        padding: 60px 1.5rem;
+    }
+    
+    .extension-section {
+        padding: 2rem 1.5rem;
+    }
+    
+    .extension-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .extension-number {
+        font-size: 3rem;
+    }
+    
+    .extension-title {
+        font-size: 1.6rem;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+    
+    .footer-nav {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}

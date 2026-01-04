@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extensions & Extra Features - Premium Snooker</title>
+    <link rel="stylesheet" href="extensions-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <!-- Home Button -->
+    <a href="home.html" id="home-button">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>HOME</span>
+    </a>
+
+    <nav class="top-nav">
+        <a href="home.html" class="nav-link">← Back to Home</a>
+        <div class="nav-title">Premium Snooker</div>
+    </nav>
+
+    <header class="page-header">
+        <h1 class="page-title">Extensions & Extra Features</h1>
+        <p class="page-subtitle">Enhanced gameplay mechanics and broadcast-quality presentation</p>
+    </header>
+
+    <main class="extensions-container">
+
+        <!-- Extension 1: Physics Engine -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">01</span>
+                <h2 class="extension-title">Advanced Physics Engine</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>Integration of Matter.js physics library to simulate realistic ball dynamics including friction, collision response, momentum transfer, and spin mechanics.</p>
+                
+                <h3 class="content-subtitle">Why It Improves Gameplay</h3>
+                <p>Provides authentic ball behavior matching real snooker physics. Players experience realistic cushion bounces, ball-to-ball collisions, and natural deceleration, making strategic shot planning essential.</p>
+                
+                <h3 class="content-subtitle">Implementation Details</h3>
+                <ul class="details-list">
+                    <li>Realistic coefficient of restitution for cushions and balls</li>
+                    <li>Angular and linear velocity calculations</li>
+                    <li>Precise collision detection and response</li>
+                    <li>Gradual friction-based deceleration</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Extension 2: Shot Aiming System -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">02</span>
+                <h2 class="extension-title">Professional Aiming System</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>Visual aiming guide with dynamic cue positioning, power meter, and trajectory prediction to assist shot planning.</p>
+                
+                <h3 class="content-subtitle">Why It Improves Gameplay</h3>
+                <p>Enables players to visualize shot angles and power requirements. The aiming system replicates the mental calculations professional players make, making the game accessible yet strategically deep.</p>
+                
+                <h3 class="content-subtitle">UI Components</h3>
+                <ul class="details-list">
+                    <li>Rotatable cue stick following mouse position</li>
+                    <li>Power bar with visual feedback</li>
+                    <li>Trajectory line showing predicted ball path</li>
+                    <li>Real-time angle calculations</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Extension 3: Scoring System -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">03</span>
+                <h2 class="extension-title">Broadcast-Style Scoring</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>Comprehensive scoring system tracking player points, break scores, frame progress, and foul detection with automatic point allocation.</p>
+                
+                <h3 class="content-subtitle">Why It Improves Gameplay</h3>
+                <p>Maintains official snooker rules for scoring, creating an authentic competitive experience. Break tracking encourages strategic play and rewards consecutive successful pots.</p>
+                
+                <h3 class="content-subtitle">Features</h3>
+                <ul class="details-list">
+                    <li>Live score tracking for two players</li>
+                    <li>Break counter showing current run</li>
+                    <li>Automatic foul penalty calculation</li>
+                    <li>Shot outcome feedback system</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Extension 4: Rules Engine -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">04</span>
+                <h2 class="extension-title">Official Rules Engine</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>Complete implementation of World Snooker Tour official rules including legal shot validation, ball-on determination, foul detection, and game state management.</p>
+                
+                <h3 class="content-subtitle">Why It Improves Realism</h3>
+                <p>Enforces authentic snooker rules: red-color alternation, final colors sequence, touching ball rules, and various foul conditions. Creates genuine match scenarios.</p>
+                
+                <h3 class="content-subtitle">Rules Enforced</h3>
+                <ul class="details-list">
+                    <li>Ball-on determination (red/color alternation)</li>
+                    <li>Multiple foul types (miss, wrong ball, in-off)</li>
+                    <li>Final colors sequence after reds cleared</li>
+                    <li>Minimum 4-point foul penalty</li>
+                    <li>Touching ball placement rules</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Extension 5: UI & Visual Design -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">05</span>
+                <h2 class="extension-title">Broadcast Interface Design</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>Professional television broadcast-inspired UI with player panels, status displays, match progress indicators, and cinematic visual elements.</p>
+                
+                <h3 class="content-subtitle">Why It Enhances Experience</h3>
+                <p>Creates immersive viewing experience similar to watching professional snooker on television. Clean, minimal design keeps focus on gameplay while providing essential information.</p>
+                
+                <h3 class="content-subtitle">Interface Elements</h3>
+                <ul class="details-list">
+                    <li>Player score panels with active player highlighting</li>
+                    <li>Status panel showing game mode and current action</li>
+                    <li>Match progress tracker (frame, balls remaining, shots)</li>
+                    <li>Shot feedback messaging system</li>
+                    <li>Subtle animations and transitions</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Extension 6: Game Modes -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">06</span>
+                <h2 class="extension-title">Multiple Game Modes</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>Selectable game modes including Standard Snooker, Practice Mode, and Quick Match variants with different rule sets and time constraints.</p>
+                
+                <h3 class="content-subtitle">Why It Improves Usability</h3>
+                <p>Accommodates different skill levels and play preferences. Practice mode allows learning without pressure, while standard mode provides full competitive experience.</p>
+                
+                <h3 class="content-subtitle">Available Modes</h3>
+                <ul class="details-list">
+                    <li><strong>Standard Mode:</strong> Full official rules enforcement</li>
+                    <li><strong>Practice Mode:</strong> Relaxed rules for skill development</li>
+                    <li><strong>Quick Match:</strong> Shortened frames for faster gameplay</li>
+                    <li>Mode selection via dropdown interface</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Extension 7: Ball Respawn System -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">07</span>
+                <h2 class="extension-title">Automated Ball Management</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>Automatic ball respawning system with visual dispenser effect. Colors return to their spots after being potted (during red phase), maintaining official snooker spot positions.</p>
+                
+                <h3 class="content-subtitle">Why It Improves Gameplay</h3>
+                <p>Eliminates manual ball replacement, maintaining game flow. The visual dispenser adds satisfying feedback while respecting official spot positions for each color ball.</p>
+                
+                <h3 class="content-subtitle">System Features</h3>
+                <ul class="details-list">
+                    <li>Animated ball respawn from dispenser tube</li>
+                    <li>Correct spot position for each color</li>
+                    <li>Automatic cue ball replacement after fouls</li>
+                    <li>Visual confirmation of ball state changes</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Extension 8: Audio & Feedback -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">08</span>
+                <h2 class="extension-title">Immersive Audio & Feedback</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>Sound effects for ball collisions, pot confirmations, and shot feedback. Visual feedback through status messages and color-coded alerts.</p>
+                
+                <h3 class="content-subtitle">Why It Improves Experience</h3>
+                <p>Audio-visual feedback creates satisfying interaction loops. Players receive immediate confirmation of successful shots or fouls, enhancing engagement and learning.</p>
+                
+                <h3 class="content-subtitle">Feedback Systems</h3>
+                <ul class="details-list">
+                    <li>Collision sound effects (ball-ball, ball-cushion)</li>
+                    <li>Pot confirmation audio</li>
+                    <li>Status message system for shot outcomes</li>
+                    <li>Visual indicators for fouls and successful shots</li>
+                    <li>Color-coded messaging (green for success, red for fouls)</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="page-footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Premium Snooker Simulation</p>
+            <nav class="footer-nav">
+                <a href="home.html" class="footer-link">Home</a>
+                <a href="index.html" class="footer-link">Play Game</a>
+            </nav>
+        </div>
+    </footer>
+
+</body>
+</html>
