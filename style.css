@@ -1,6 +1,28 @@
+/* ===================================
+   PREMIUM SNOOKER GAME STYLES
+   
+   This stylesheet provides the UI styling for the snooker simulation.
+   Features include:
+   - Loading screen animations
+   - Player score panels
+   - Game controls and dropdowns
+   - Camera control sliders
+   - Responsive broadcast-quality design
+   
+   Color Scheme:
+   - Background: Dark charcoal (#0d0e12, #1a1f24)
+   - Accent: Muted gold (#b89a62, #d4af69)
+   - Text: Light grey (#e0e0e0)
+   =================================== */
+
+/* ===================================
+   BASE STYLES
+   =================================== */
+
 body {
     margin: 0;
     padding: 0;
+    /* Dark gradient background for cinematic effect */
     background: radial-gradient(circle at center, #1a1f24 0%, #0d0e12 100%);
     color: #e0e0e0;
     font-family: 'Inter', 'Roboto', sans-serif;
@@ -13,6 +35,9 @@ body {
 
 /* ===================================
    LOADING SCREEN
+   
+   Displays "ENTERING ARENA" message with animated dots.
+   Automatically zooms in and fades out after 2.5 seconds.
    =================================== */
 
 #loading-screen {
@@ -21,13 +46,17 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
+    /* Gradient background for dramatic entrance */
     background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 50%, #0f1419 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    z-index: 10000; /* Ensure it's above all other elements */
+    /* Zoom animation starts after 2.5s delay */
     animation: zoomIn 2s ease-out 2.5s forwards;
 }
+
+/* Zoom-in effect that scales the screen 3x and fades to transparent */
 
 @keyframes zoomIn {
     0% {
@@ -93,6 +122,7 @@ body {
     animation-delay: 0.6s;
 }
 
+/* Pulse animation creates breathing effect for loading dots */
 @keyframes pulse {
     0%, 100% {
         opacity: 0.3;
@@ -106,6 +136,9 @@ body {
 
 /* ===================================
    HOME BUTTON
+   
+   Navigation button positioned at bottom-left.
+   Includes arrow icon and fades in after loading screen.
    =================================== */
 
 #home-button {
@@ -116,6 +149,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 12px 20px;
+    /* Frosted glass effect */
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(184, 154, 98, 0.2);
@@ -126,9 +160,12 @@ body {
     letter-spacing: 0.15em;
     transition: all 0.3s ease;
     z-index: 1000;
+    /* Hidden initially, fades in after 3 seconds */
     opacity: 0;
     animation: fadeInButton 0.5s ease-out 3s forwards;
 }
+
+/* Fade-in animation for delayed appearance */
 
 @keyframes fadeInButton {
     to {
@@ -148,13 +185,23 @@ body {
     height: 18px;
 }
 
+/* ===================================
+   GAME CONTAINER
+   
+   Main canvas container that holds the p5.js rendering.
+   Zooms in from 30% to full size after loading screen.
+   =================================== */
+
 #game-container {
     position: relative;
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    /* Hidden initially, appears after loading */
     opacity: 0;
     transform: scale(0.3);
     animation: gameZoomIn 1s ease-out 2.5s forwards;
 }
+
+/* Zoom and fade-in animation for game canvas */
 
 @keyframes gameZoomIn {
     to {
@@ -162,6 +209,14 @@ body {
         transform: scale(1);
     }
 }
+
+/* ===================================
+   UI OVERLAY LAYER
+   
+   Transparent layer positioned over the game canvas.
+   Contains all interface elements (scores, controls).
+   Pointer events disabled except for interactive children.
+   =================================== */
 
 #ui-layer {
     position: absolute;
@@ -171,6 +226,14 @@ body {
     height: 100%;
     pointer-events: none;
 }
+
+/* ===================================
+   PLAYER SCORE PANELS
+   
+   Two panels display player names, scores, and current break.
+   Active player panel has enhanced styling and animations.
+   Positioned at top-left (P1) and top-right (P2).
+   =================================== */
 
 .player-panel {
     position: absolute;
@@ -186,39 +249,42 @@ body {
     min-width: 140px;
 }
 
+/* Player 1 positioned at top-left */
 #player1-panel {
     left: 40px;
     align-items: flex-start;
     border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Player 2 positioned at top-right */
 #player2-panel {
     right: 40px;
     align-items: flex-end;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Vertical Accent Line */
+/* Vertical accent line that glows when player is active */
 .player-panel::before {
     content: '';
     position: absolute;
     top: 15%;
     height: 70%;
     width: 1px;
-    background: rgba(212, 175, 55, 0.3);
-    /* Muted Gold */
+    background: rgba(212, 175, 55, 0.3); /* Muted gold */
     transition: all 0.5s ease;
 }
 
+/* Position accent line on left for Player 1 */
 #player1-panel::before {
     left: 0;
 }
 
+/* Position accent line on right for Player 2 */
 #player2-panel::before {
     right: 0;
 }
 
-/* Turn Indicator Dot */
+/* Small indicator dot that appears when player is active */
 .player-panel::after {
     content: '';
     position: absolute;

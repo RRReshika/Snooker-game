@@ -1,4 +1,31 @@
-// Matter.js module aliases
+/* ===================================
+   PREMIUM SNOOKER GAME - MAIN LOGIC
+   
+   This is the core game engine built with p5.js and Matter.js.
+   
+   Key Features:
+   - Realistic physics simulation using Matter.js
+   - 3D camera controls with manual and auto modes
+   - Multiple game modes (Standard, Random, Practice)
+   - Two rule sets (Standard and Beginner)
+   - Shot replay system with slow-motion
+   - Customizable table colors (5 options)
+   - Professional broadcast-style UI
+   - Score tracking and break counting
+   
+   Libraries Used:
+   - p5.js: Graphics rendering and canvas management
+   - Matter.js: 2D physics engine for ball dynamics
+   
+   Author: Student Project
+   Version: 1.0
+   =================================== */
+
+// ===================================
+// MATTER.JS MODULE ALIASES
+// ===================================
+
+// Import Matter.js components for easier access
 const Engine = Matter.Engine;
 const World = Matter.World;
 const Bodies = Matter.Bodies;
@@ -7,52 +34,80 @@ const Events = Matter.Events;
 const Vector = Matter.Vector;
 const Composite = Matter.Composite;
 
-let engine;
-let world;
+const Composite = Matter.Composite;
 
-// Game constants
+// ===================================
+// PHYSICS ENGINE VARIABLES
+// ===================================
+
+let engine;  // Matter.js physics engine instance
+let world;   // Physics world containing all bodies
+
+// ===================================
+// TABLE AND GAME CONSTANTS
+// ===================================
+
+// Table dimensions in pixels
 const TABLE_WIDTH = 800;
 const TABLE_HEIGHT = 400;
-const RAIL_WIDTH = 30;
-const POCKET_RADIUS = 25; // Increased size
-const BALL_RADIUS = 10;
+const RAIL_WIDTH = 30;        // Width of cushion rails
+const POCKET_RADIUS = 25;     // Radius of corner and middle pockets
+const BALL_RADIUS = 10;       // Radius of all balls
 
-// Game state
-let balls = [];
-let cushions = [];
-let pockets = [];
-let cueBall;
-let cue;
-let impacts = [];
-let score = 0; // Deprecated, kept for safety
-let scores = { 1: 0, 2: 0 };
-let currentPlayer = 1;
-let ballsPottedThisTurn = 0;
-let currentBreak = 0; // Track current scoring run
-let foulCommitted = false;
-let currentMode = 1; // 1: Triangle, 2: Random, 3: Practice
-let isAiming = false;
-let isShooting = false;
-let isPlacingCueBall = true;
+// ===================================
+// GAME STATE VARIABLES
+// ===================================
+
+// Arrays storing game objects
+let balls = [];      // All balls currently on table
+let cushions = [];   // Cushion/rail collision bodies
+let pockets = [];    // Pocket collision sensors
+let cueBall;         // Reference to white cue ball
+let cue;             // Cue stick object
+let impacts = [];    // Visual impact effects
+
+// Scoring and player tracking
+let score = 0;       // Legacy variable (kept for compatibility)
+let scores = { 1: 0, 2: 0 };  // Score for each player
+let currentPlayer = 1;         // Active player (1 or 2)
+let ballsPottedThisTurn = 0;  // Balls potted in current turn
+let currentBreak = 0;          // Points scored in current break
+let foulCommitted = false;     // Whether a foul occurred
+let framesCompleted = 0;       // Total frames played
+let totalShots = 0;            // Total shots taken
+
+// Game mode and settings
+let currentMode = 1;          // 1=Triangle, 2=Random, 3=Practice
+let isAiming = false;         // Whether player is aiming
+let isShooting = false;       // Whether balls are in motion
+let isPlacingCueBall = true;  // Whether placing cue ball after foul
 let gameRulesMode = 'STANDARD'; // 'STANDARD' or 'BEGINNER'
-let uiActive = false; // Flag to lock game input during UI interaction
-let framesCompleted = 0;
-let totalShots = 0;
+let uiActive = false;         // Lock input during UI interaction
 
-// Visual Replay State
-let lastShotRecording = [];
-let isRecording = false;
-let isReplaying = false;
-let replayFrameIndex = 0;
+// ===================================
+// REPLAY SYSTEM VARIABLES
+// ===================================
 
-// Slow-Motion Toggle State
-let slowMotionEnabled = false;
+let lastShotRecording = [];  // Stores ball positions for replay
+let isRecording = false;     // Whether currently recording
+let isReplaying = false;     // Whether currently replaying
+let replayFrameIndex = 0;    // Current frame in replay
 
-// Board Colour State
-let currentTableColour = 'green';
-let tableColourTransition = 0;
-let targetTableColour = 'green';
+// ===================================
+// SPECIAL FEATURES
+// ===================================
 
+let slowMotionEnabled = false; // Slow-motion toggle state
+
+// ===================================
+// TABLE COLOR CUSTOMIZATION
+// ===================================
+
+let currentTableColour = 'green';  // Current table color name
+let tableColourTransition = 0;      // Transition progress (0-1)
+let targetTableColour = 'green';    // Target color for transition
+
+// Color presets: center (bright), edge (darker), cushion (medium)
 const TABLE_COLOURS = {
     green: { center: [30, 100, 60], edge: [10, 40, 25], cushion: [20, 70, 40] },
     red: { center: [100, 20, 20], edge: [50, 10, 10], cushion: [80, 15, 15] },
@@ -61,21 +116,33 @@ const TABLE_COLOURS = {
     pink: { center: [255, 120, 180], edge: [230, 90, 150], cushion: [240, 105, 165] }
 };
 
-let tableGraphics;
-let camAngle = 0;
-let targetCamAngle = 0;
-let camPhi = 0.8; // Elevation angle (radians)
-let targetCamPhi = 0.8;
-let camRadius = 900;
+// ===================================
+// 3D CAMERA VARIABLES
+// ===================================
 
-// Smart Camera Snap State
-const DEFAULT_CAM_ANGLE = 0;
-const DEFAULT_CAM_PHI = 0.8;
-let isAutoSnapping = false;
-let snapPending = false;
-let snapStartTime = 0;
-const SNAP_DELAY = 1000; // 1 second delay before snapping starts
+let tableGraphics;       // 2D graphics buffer for table texture
+let camAngle = 0;        // Current horizontal rotation (radians)
+let targetCamAngle = 0;  // Target rotation for smooth transition
+let camPhi = 0.8;        // Current elevation angle (radians)
+let targetCamPhi = 0.8;  // Target elevation for smooth transition
+let camRadius = 900;     // Distance from camera to table center
 
+// Smart camera auto-snap settings
+const DEFAULT_CAM_ANGLE = 0;    // Default horizontal angle
+const DEFAULT_CAM_PHI = 0.8;    // Default elevation angle
+let isAutoSnapping = false;     // Whether auto-snap is active
+let snapPending = false;        // Whether snap is queued
+let snapStartTime = 0;          // Timestamp when snap started
+const SNAP_DELAY = 1000;        // Delay before auto-snap (1 second)
+
+// ===================================
+// SETUP FUNCTION
+// ===================================
+
+/**
+ * Initial setup - runs once when program starts
+ * Creates canvas, initializes physics engine, and sets up game elements
+ */
 function setup() {
     const canvas = createCanvas(windowWidth, windowHeight, WEBGL);
     canvas.parent('game-container');

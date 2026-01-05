@@ -1,24 +1,40 @@
+<!-- 
+Graphic Design Midterm Project  
+Student Name : Rajagopal Raja Reshika
+Student Number : 240621557
+ -->
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <!-- Character encoding and viewport settings -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium Snooker</title>
+    
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- External libraries: p5.js for graphics rendering and Matter.js for physics engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;600&family=Inter:wght@100;300;500&display=swap"
-        rel="stylesheet">
+    
+    <!-- Google Fonts for professional typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;600&family=Inter:wght@100;300;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Loading Screen -->
+    <!-- ========================================
+         LOADING SCREEN
+         Animated intro that displays before game starts
+         Includes zoom animation and fades out after 2.5s
+         ======================================== -->
     <div id="loading-screen">
         <div class="loading-content">
             <h1 class="loading-title">ENTERING ARENA</h1>
+            <!-- Animated loading indicator dots -->
             <div class="loading-dots">
                 <span></span>
                 <span></span>
@@ -27,7 +43,10 @@
         </div>
     </div>
 
-    <!-- Home Button -->
+    <!-- ========================================
+         NAVIGATION BUTTON
+         Back to home page button with icon
+         ======================================== -->
     <a href="home.html" id="home-button">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -35,22 +54,48 @@
         <span>HOME</span>
     </a>
 
+    <!-- ========================================
+         GAME CANVAS
+         p5.js canvas renders here via sketch.js
+         ======================================== -->
     <div id="game-container"></div>
+    
+    <!-- Ball dispenser visual indicator -->
     <div id="ball-dispenser-tube"></div>
+    
+    <!-- ========================================
+         UI OVERLAY LAYER
+         All game interface elements (scores, controls, status)
+         Positioned absolutely over the game canvas
+         ======================================== -->
     <div id="ui-layer">
+        <!-- Player 1 score panel (left side) -->
+        <!-- Active player class adds visual emphasis -->
         <div id="player1-panel" class="player-panel active-player">
             <div class="player-name">PLAYER 1</div>
             <div class="player-score">0</div>
             <div class="player-break">BREAK 0</div>
         </div>
+        
+        <!-- Player 2 score panel (right side) -->
         <div id="player2-panel" class="player-panel inactive-player">
             <div class="player-name">PLAYER 2</div>
             <div class="player-score">0</div>
             <div class="player-break">BREAK 0</div>
         </div>
+        
+        <!-- ========================================
+             HEADER CONTROLS
+             Game mode, status, and match statistics
+             ======================================== -->
         <div id="header-container">
+            <!-- Current game mode indicator -->
             <div id="mode-panel">MODE: STANDARD</div>
+            
+            <!-- Current game state (aiming, shooting, etc) -->
             <div id="status-panel">STATUS: AIMING</div>
+            
+            <!-- Match progress statistics -->
             <div id="match-progress-panel">
                 <div class="progress-item">
                     <span class="label">FRAME</span>
@@ -65,19 +110,29 @@
                     <span id="shot-count" class="value">0</span>
                 </div>
             </div>
+            <!-- Shot feedback messages appear here -->
             <div id="shot-feedback"></div>
         </div>
+        
+        <!-- ========================================
+             RULES DROPDOWN
+             Toggle between Standard and Beginner modes
+             Displays active rules dynamically
+             ======================================== -->
         <div id="rules-dropdown-container">
             <div id="rules-header" onclick="toggleRulesDropdown()">RULES: STANDARD ▾</div>
             <div id="rules-content" class="hidden">
-                <ul id="rules-list">
-                    <!-- Dynamic Content -->
-                </ul>
+                <!-- Rules list populated dynamically by sketch.js -->
+                <ul id="rules-list"></ul>
                 <button id="rules-mode-btn" onclick="toggleRules()">SWITCH TO BEGINNER</button>
             </div>
         </div>
 
-        <!-- Board Colour Dropdown -->
+        <!-- ========================================
+             TABLE COLOR SELECTOR
+             Dropdown to change table felt color
+             5 color options available
+             ======================================== -->
         <div id="colour-dropdown-container">
             <div id="colour-header" onclick="toggleColourDropdown()">
                 <span>TABLE: </span>
@@ -111,19 +166,33 @@
     </div>
     </div>
 
+    <!-- ========================================
+         GAME CONTROL BUTTONS
+         Replay and slow-motion toggles
+         ======================================== -->
     <button id="replay-btn" onclick="playVisualReplay()">REPLAY SHOT</button>
     <button id="slowmo-btn" onclick="toggleSlowMotion()">SLOW-MO: OFF</button>
+    
+    <!-- ========================================
+         CAMERA CONTROLS
+         Manual camera rotation and tilt sliders
+         Allows 3D view adjustment
+         ======================================== -->
     <div id="camera-controls">
         <div class="slider-group">
             <label>ROTATE</label>
+            <!-- Rotation range: -180° to 180° -->
             <input type="range" id="cam-slider" min="-3.14" max="3.14" step="0.01" value="0">
         </div>
         <div class="slider-group">
             <label>TILT</label>
+            <!-- Tilt range: 11° to 80° elevation -->
             <input type="range" id="tilt-slider" min="0.2" max="1.4" step="0.01" value="0.8">
         </div>
     </div>
     </div>
+    
+    <!-- Main game logic script (p5.js + Matter.js) -->
     <script src="sketch.js"></script>
 </body>
 
