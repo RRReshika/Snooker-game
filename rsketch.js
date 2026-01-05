@@ -9,7 +9,7 @@ const Events = Matter.Events;
 const Vector = Matter.Vector;
 const Composite = Matter.Composite;
 
-let engine, world;
+let rengine, rworld;
 
 // table dimensions
 const TABLE_WIDTH = 800;
@@ -25,41 +25,41 @@ const SNAP_DELAY = 1000;
 // game state
 
 // Arrays storing game objects
-let balls = [];      // All balls currently on table
-let cushions = [];   // Cushion/rail collision bodies
-let pockets = [];    // Pocket collision sensors
-let cueBall;         // Reference to white cue ball
-let cue;             // Cue stick object
-let impacts = [];    // Visual impact effects
+let rballs = [];      // All rballs currently on table
+let rcushions = [];   // Cushion/rail collision bodies
+let rpockets = [];    // Pocket collision sensors
+let rcueBall;         // Reference to white rcue ball
+let rcue;             // Cue stick object
+let rimpacts = [];    // Visual impact effects
 
 // Scoring and player tracking
-let scores = { 1: 0, 2: 0 };  // Score for each player
-let currentPlayer = 1;
-let ballsPottedThisTurn = 0;
-let currentBreak = 0;
-let foulCommitted = false;
-let framesCompleted = 0;
-let totalShots = 0;
+let rscores = { 1: 0, 2: 0 };  // Score for each player
+let rcurrentPlayer = 1;
+let rballsPottedThisTurn = 0;
+let rcurrentBreak = 0;
+let rfoulCommitted = false;
+let rframesCompleted = 0;
+let rtotalShots = 0;
 
-let currentMode = 1; // 1=Triangle, 2=Random, 3=Practice
-let isAiming = false;
-let isShooting = false;
-let isPlacingCueBall = true;
-let gameRulesMode = 'STANDARD';
-let uiActive = false;
+let rcurrentMode = 1; // 1=Triangle, 2=Random, 3=Practice
+let risAiming = false;
+let risShooting = false;
+let risPlacingCueBall = true;
+let rgameRulesMode = 'STANDARD';
+let ruiActive = false;
 
 // replay system
-let lastShotRecording = [];
-let isRecording = false;
-let isReplaying = false;
-let replayFrameIndex = 0;
+let rlastShotRecording = [];
+let risRecording = false;
+let risReplaying = false;
+let rreplayFrameIndex = 0;
 
-let slowMotionEnabled = false;
+let rslowMotionEnabled = false;
 
 // table color options
-let currentTableColour = 'green';
-let tableColourTransition = 0;
-let targetTableColour = 'green';
+let rcurrentTableColour = 'green';
+let rtableColourTransition = 0;
+let rtargetTableColour = 'green';
 
 const TABLE_COLOURS = {
     green: { center: [30, 100, 60], edge: [10, 40, 25], cushion: [20, 70, 40] },
@@ -70,18 +70,18 @@ const TABLE_COLOURS = {
 };
 
 // camera control
-let tableGraphics;
-let camAngle = 0;
-let targetCamAngle = 0;
-let camPhi = 0.8;
-let targetCamPhi = 0.8;
-let camRadius = 900;
+let rtableGraphics;
+let rcamAngle = 0;
+let rtargetCamAngle = 0;
+let rcamPhi = 0.8;
+let rtargetCamPhi = 0.8;
+let rcamRadius = 900;
 
 const DEFAULT_CAM_ANGLE = 0;
 const DEFAULT_CAM_PHI = 0.8;
-let isAutoSnapping = false;
-let snapPending = false;
-let snapStartTime = 0;
+let risAutoSnapping = false;
+let rsnapPending = false;
+let rsnapStartTime = 0;
 
 function preload() {
     // using basic Web Audio API for sounds
@@ -91,7 +91,7 @@ function preload() {
 function setup() {
     // check if libraries loaded
     if (typeof Matter === 'undefined' || typeof p5 === 'undefined') {
-        showError('Libraries failed to load');
+        rshowError('Libraries failed to load');
         return;
     }
     
@@ -99,33 +99,33 @@ function setup() {
         const canvas = createCanvas(windowWidth, windowHeight, WEBGL);
         canvas.parent('game-container');
 
-        tableGraphics = createGraphics(TABLE_WIDTH, TABLE_HEIGHT);
+        rtableGraphics = createGraphics(TABLE_WIDTH, TABLE_HEIGHT);
 
         // setup physics
-        engine = Engine.create();
-        world = engine.world;
+        rengine = Engine.create();
+        rworld = rengine.rworld;
 
         // tried different values here - 10 works best for smooth collisions
-        engine.positionIterations = 10;
-        engine.velocityIterations = 10;
+        rengine.positionIterations = 10;
+        rengine.velocityIterations = 10;
 
-        engine.world.gravity.y = 0; // no gravity for top-down view
+        rengine.rworld.gravity.y = 0; // no gravity for top-down view
 
-        setupTable();
-        setupBalls(1);
+        rsetupTable();
+        rsetupBalls(1);
     } catch (error) {
         console.error('Setup failed:', error);
-        showError('Game initialization failed');
+        rshowError('Game initialization failed');
         return;
     }
 
-    cue = new Cue();
+    rcue = new Cue();
 
     // Initialize Rules UI
-    updateRulesUI();
+    rupdateRulesUI();
 
     // Initialize Board Colour Options
-    initBoardColourOptions();
+    rinitBoardColourOptions();
 
     // Click outside to close dropdown
     window.addEventListener('click', (e) => {
@@ -134,13 +134,13 @@ function setup() {
         if (container && !container.contains(e.target)) {
             if (content && !content.classList.contains('hidden')) {
                 content.classList.add('hidden');
-                uiActive = false; // Restore input when closing
+                ruiActive = false; // Restore input when closing
             }
         }
     });
 
     // Collision Event
-    Events.on(engine, 'collisionStart', function (event) {
+    Events.on(rengine, 'collisionStart', function (event) {
         let pairs = event.pairs;
         for (let i = 0; i < pairs.length; i++) {
             let bodyA = pairs[i].bodyA;
@@ -151,36 +151,36 @@ function setup() {
                 let ballBody = bodyA.label === 'pocket' ? bodyB : bodyA;
 
                 // Find ball object
-                let ballIndex = balls.findIndex(b => b.body === ballBody);
+                let ballIndex = rballs.findIndex(b => b.body === ballBody);
                 if (ballIndex !== -1) {
-                    let pottedBall = balls[ballIndex];
+                    let pottedBall = rballs[ballIndex];
 
                     // Remove ball
-                    World.remove(world, ballBody);
-                    balls.splice(ballIndex, 1);
+                    World.remove(rworld, ballBody);
+                    rballs.splice(ballIndex, 1);
 
                     // Handle Scoring
-                    if (ballBody === cueBall.body) {
+                    if (ballBody === rcueBall.body) {
                         // FOUL: Cue ball potted
-                        foulCommitted = true;
+                        rfoulCommitted = true;
 
-                        if (gameRulesMode === 'STANDARD') {
+                        if (rgameRulesMode === 'STANDARD') {
                             // Award 4 points to opponent in Standard Mode
-                            let opponent = currentPlayer === 1 ? 2 : 1;
-                            scores[opponent] += 4;
+                            let opponent = rcurrentPlayer === 1 ? 2 : 1;
+                            rscores[opponent] += 4;
                         }
-                        // In Beginner Mode, just switch turn (handled in checkTurnState)
+                        // In Beginner Mode, just switch turn (handled in rcheckTurnState)
 
-                        cueBall = null;
+                        rcueBall = null;
                         setTimeout(() => {
                             // Auto-place for smoother gameplay
-                            isPlacingCueBall = false;
-                            cueBall = new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2, 'white');
-                            balls.push(cueBall);
+                            risPlacingCueBall = false;
+                            rcueBall = new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2, 'white');
+                            rballs.push(rcueBall);
                         }, 1000);
                     } else {
                         // Valid Pot
-                        ballsPottedThisTurn++;
+                        rballsPottedThisTurn++;
                         let points = 1; // Default Red
                         if (pottedBall.color === 'yellow') points = 2;
                         else if (pottedBall.color === 'green') points = 3;
@@ -189,12 +189,12 @@ function setup() {
                         else if (pottedBall.color === 'pink') points = 6;
                         else if (pottedBall.color === 'black') points = 7;
 
-                        scores[currentPlayer] += points;
-                        currentBreak += points; // Increment break counter
+                        rscores[rcurrentPlayer] += points;
+                        rcurrentBreak += points; // Increment break counter
 
                         // Update Dispenser if object ball potted
                         if (pottedBall.color !== 'white') {
-                            removeBallFromDispenser(pottedBall.color);
+                            rremoveBallFromDispenser(pottedBall.color);
                         }
                     }
                 }
@@ -206,64 +206,64 @@ function setup() {
 function draw() {
     background(15, 18, 22); // Brighter charcoal/slate base tone
 
-    if (!isReplaying) {
-        Engine.update(engine);
-        checkTurnState();
+    if (!risReplaying) {
+        Engine.update(rengine);
+        rcheckTurnState();
 
-        if (isRecording) {
-            recordFrame();
+        if (risRecording) {
+            rrecordFrame();
         }
     } else {
         // Just increment frame index, drawing happens later in the loop
-        updatePlaybackIndex();
+        rupdatePlaybackIndex();
     }
 
-    // Safety Check: Remove balls that fly out of bounds (prevents visual artifacts)
-    for (let i = balls.length - 1; i >= 0; i--) {
-        let b = balls[i];
+    // Safety Check: Remove rballs that fly out of bounds (prevents visual artifacts)
+    for (let i = rballs.length - 1; i >= 0; i--) {
+        let b = rballs[i];
         let pos = b.body.position;
         // If ball is too far from table center (tightened to 700) or fell through floor
         if (dist(pos.x, pos.y, TABLE_WIDTH / 2, TABLE_HEIGHT / 2) > 700 || pos.y > 1000) {
-            World.remove(world, b.body);
-            balls.splice(i, 1);
+            World.remove(rworld, b.body);
+            rballs.splice(i, 1);
         }
     }
 
     // Update Camera Rotation (Azimuth)
     let sliderVal = parseFloat(document.getElementById('cam-slider').value);
-    if (!isAutoSnapping && abs(sliderVal - targetCamAngle) > 0.01) {
-        targetCamAngle = sliderVal;
-        snapPending = false; // Cancel snap if user moves slider
+    if (!risAutoSnapping && abs(sliderVal - rtargetCamAngle) > 0.01) {
+        rtargetCamAngle = sliderVal;
+        rsnapPending = false; // Cancel snap if user moves slider
     }
-    camAngle = lerp(camAngle, targetCamAngle, 0.1);
+    rcamAngle = lerp(rcamAngle, rtargetCamAngle, 0.1);
 
     // Update Camera Tilt (Elevation)
     let tiltVal = parseFloat(document.getElementById('tilt-slider').value);
-    if (!isAutoSnapping && abs(tiltVal - targetCamPhi) > 0.01) {
-        targetCamPhi = tiltVal;
-        snapPending = false; // Cancel snap if user moves slider
+    if (!risAutoSnapping && abs(tiltVal - rtargetCamPhi) > 0.01) {
+        rtargetCamPhi = tiltVal;
+        rsnapPending = false; // Cancel snap if user moves slider
     }
-    camPhi = lerp(camPhi, targetCamPhi, 0.1);
+    rcamPhi = lerp(rcamPhi, rtargetCamPhi, 0.1);
 
     // Smart Camera Snap Logic
-    if (snapPending && millis() - snapStartTime > SNAP_DELAY) {
-        isAutoSnapping = true;
-        snapPending = false;
+    if (rsnapPending && millis() - rsnapStartTime > SNAP_DELAY) {
+        risAutoSnapping = true;
+        rsnapPending = false;
     }
 
-    if (isAutoSnapping) {
-        targetCamAngle = lerp(targetCamAngle, DEFAULT_CAM_ANGLE, 0.05);
-        targetCamPhi = lerp(targetCamPhi, DEFAULT_CAM_PHI, 0.05);
+    if (risAutoSnapping) {
+        rtargetCamAngle = lerp(rtargetCamAngle, DEFAULT_CAM_ANGLE, 0.05);
+        rtargetCamPhi = lerp(rtargetCamPhi, DEFAULT_CAM_PHI, 0.05);
 
         // Sync Sliders
-        document.getElementById('cam-slider').value = targetCamAngle;
-        document.getElementById('tilt-slider').value = targetCamPhi;
+        document.getElementById('cam-slider').value = rtargetCamAngle;
+        document.getElementById('tilt-slider').value = rtargetCamPhi;
 
         // Stop snapping when close enough
-        if (abs(targetCamAngle - DEFAULT_CAM_ANGLE) < 0.001 && abs(targetCamPhi - DEFAULT_CAM_PHI) < 0.001) {
-            targetCamAngle = DEFAULT_CAM_ANGLE;
-            targetCamPhi = DEFAULT_CAM_PHI;
-            isAutoSnapping = false;
+        if (abs(rtargetCamAngle - DEFAULT_CAM_ANGLE) < 0.001 && abs(rtargetCamPhi - DEFAULT_CAM_PHI) < 0.001) {
+            rtargetCamAngle = DEFAULT_CAM_ANGLE;
+            rtargetCamPhi = DEFAULT_CAM_PHI;
+            risAutoSnapping = false;
         }
     }
 
@@ -277,19 +277,19 @@ function draw() {
     // Z = r * sin(phi) * cos(theta)
 
     // took me a while to get this camera math right
-    let camX = camRadius * sin(camPhi) * sin(camAngle);
-    let camY = -camRadius * cos(camPhi); // Negative because Y is down in WebGL screen coords, but we want 'up' to be negative Y
-    let camZ = camRadius * sin(camPhi) * cos(camAngle);
+    let camX = rcamRadius * sin(rcamPhi) * sin(rcamAngle);
+    let camY = -rcamRadius * cos(rcamPhi); // Negative because Y is down in WebGL screen coords, but we want 'up' to be negative Y
+    let camZ = rcamRadius * sin(rcamPhi) * cos(rcamAngle);
 
     camera(camX, camY, camZ, 0, 0, 0, 0, 1, 0);
 
     // Update Cue logic before rendering table texture to ensure synchronization
-    if (cueBall && !isShooting && !isReplaying) {
-        cue.update();
+    if (rcueBall && !risShooting && !risReplaying) {
+        rcue.update();
     }
 
     // Render 2D Table to Texture
-    drawTableToTexture();
+    rdrawTableToTexture();
 
     // Lighting
     ambientLight(60); // Brighter ambient for arena feel
@@ -304,7 +304,7 @@ function draw() {
     spotLight(100, 100, 120, 1000, -500, -500, -1, 0.5, 0.5, PI / 4, 1); // Side fill
 
     // Draw Environment (Arena)
-    drawArena();
+    rdrawArena();
 
     // Draw 3D Table Structure
     push();
@@ -312,36 +312,36 @@ function draw() {
 
     // 1. Felt Surface (Texture)
     push();
-    translate(0, 0, 2); // Slightly raised to avoid z-fighting with base, but below cushions
-    texture(tableGraphics);
+    translate(0, 0, 2); // Slightly raised to avoid z-fighting with base, but below rcushions
+    texture(rtableGraphics);
     noStroke();
     plane(TABLE_WIDTH, TABLE_HEIGHT);
     pop();
 
     // 2. Table Frame & Rails
-    drawTableFrame();
+    rdrawTableFrame();
 
     pop();
 
     // Draw Balls in 3D
-    if (!isReplaying) {
-        drawBalls3D();
+    if (!risReplaying) {
+        rdrawBalls3D();
     } else {
-        drawReplayBalls3D();
+        rdrawReplayBalls3D();
     }
 
     // Draw Impacts
-    if (!isReplaying) {
-        drawImpacts3D();
+    if (!risReplaying) {
+        rdrawImpacts3D();
     }
 
     // Draw Cue
-    if (cueBall && !isShooting && !isReplaying) {
-        cue.show3D();
+    if (rcueBall && !risShooting && !risReplaying) {
+        rcue.show3D();
     }
 
     // Debug Cursor (Ghost Ball)
-    let mousePos = getMouseOnTable();
+    let mousePos = rgetMouseOnTable();
     if (mousePos) {
         push();
         translate(mousePos.x - TABLE_WIDTH / 2, -BALL_RADIUS, mousePos.y - TABLE_HEIGHT / 2);
@@ -357,11 +357,11 @@ function draw() {
 
     if (p1Panel && p2Panel) {
         // Update Scores
-        p1Panel.querySelector('.player-score').innerText = scores[1];
-        p2Panel.querySelector('.player-score').innerText = scores[2];
+        p1Panel.querySelector('.player-score').innerText = rscores[1];
+        p2Panel.querySelector('.player-score').innerText = rscores[2];
 
         // Update Active State
-        if (currentPlayer === 1) {
+        if (rcurrentPlayer === 1) {
             p1Panel.classList.add('active-player');
             p1Panel.classList.remove('inactive-player');
             p2Panel.classList.add('inactive-player');
@@ -371,8 +371,8 @@ function draw() {
             let b1 = p1Panel.querySelector('.player-break');
             let b2 = p2Panel.querySelector('.player-break');
             if (b1 && b2) {
-                b1.innerText = `BREAK ${currentBreak}`;
-                b1.style.opacity = currentBreak > 0 ? 1 : 0;
+                b1.innerText = `BREAK ${rcurrentBreak}`;
+                b1.style.opacity = rcurrentBreak > 0 ? 1 : 0;
                 b2.style.opacity = 0;
             }
         } else {
@@ -385,82 +385,82 @@ function draw() {
             let b1 = p1Panel.querySelector('.player-break');
             let b2 = p2Panel.querySelector('.player-break');
             if (b1 && b2) {
-                b2.innerText = `BREAK ${currentBreak}`;
-                b2.style.opacity = currentBreak > 0 ? 1 : 0;
+                b2.innerText = `BREAK ${rcurrentBreak}`;
+                b2.style.opacity = rcurrentBreak > 0 ? 1 : 0;
                 b1.style.opacity = 0;
             }
         }
     }
 
-    let modeName = currentMode === 1 ? "STANDARD" : currentMode === 2 ? "RANDOM" : "PRACTICE";
+    let modeName = rcurrentMode === 1 ? "STANDARD" : rcurrentMode === 2 ? "RANDOM" : "PRACTICE";
     let modeEl = document.getElementById('mode-panel');
     if (modeEl) modeEl.innerText = `MODE: ${modeName}`;
 
     let statusEl = document.getElementById('status-panel');
     if (statusEl) {
-        if (isPlacingCueBall) statusEl.innerText = "STATUS: PLACE BALL (Click D-Zone)";
-        else if (isShooting) statusEl.innerText = "STATUS: SHOOTING";
+        if (risPlacingCueBall) statusEl.innerText = "STATUS: PLACE BALL (Click D-Zone)";
+        else if (risShooting) statusEl.innerText = "STATUS: SHOOTING";
         else statusEl.innerText = "STATUS: AIMING";
     }
 
     // Match Progress UI Updates
     let frameEl = document.getElementById('frame-count');
-    let ballsEl = document.getElementById('balls-remaining');
+    let ballsEl = document.getElementById('rballs-remaining');
     let shotEl = document.getElementById('shot-count');
 
-    if (frameEl) frameEl.innerText = framesCompleted + 1;
-    if (ballsEl) ballsEl.innerText = max(0, balls.length - (cueBall ? 1 : 0));
-    if (shotEl) shotEl.innerText = totalShots;
+    if (frameEl) frameEl.innerText = rframesCompleted + 1;
+    if (ballsEl) ballsEl.innerText = max(0, rballs.length - (rcueBall ? 1 : 0));
+    if (shotEl) shotEl.innerText = rtotalShots;
 }
 
 function mouseWheel(event) {
     // Cancel any active or pending snap on user interaction
-    isAutoSnapping = false;
-    snapPending = false;
+    risAutoSnapping = false;
+    rsnapPending = false;
 
     // Horizontal scroll -> Rotate
     if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-        targetCamAngle += event.deltaX * 0.001;
-        targetCamAngle = constrain(targetCamAngle, -PI, PI);
-        document.getElementById('cam-slider').value = targetCamAngle;
+        rtargetCamAngle += event.deltaX * 0.001;
+        rtargetCamAngle = constrain(rtargetCamAngle, -PI, PI);
+        document.getElementById('cam-slider').value = rtargetCamAngle;
     }
     // Vertical scroll -> Tilt
     else {
-        targetCamPhi += event.deltaY * 0.001;
-        targetCamPhi = constrain(targetCamPhi, 0.2, 1.4); // Limit tilt
-        document.getElementById('tilt-slider').value = targetCamPhi;
+        rtargetCamPhi += event.deltaY * 0.001;
+        rtargetCamPhi = constrain(rtargetCamPhi, 0.2, 1.4); // Limit tilt
+        document.getElementById('tilt-slider').value = rtargetCamPhi;
     }
     return false;
 }
 
 function keyPressed() {
     if (key === '1') {
-        currentMode = 1;
-        setupBalls(1);
+        rcurrentMode = 1;
+        rsetupBalls(1);
     } else if (key === '2') {
-        currentMode = 2;
-        setupBalls(2);
+        rcurrentMode = 2;
+        rsetupBalls(2);
     } else if (key === '3') {
-        currentMode = 3;
-        setupBalls(3);
+        rcurrentMode = 3;
+        rsetupBalls(3);
     } else if (key === 'r' || key === 'R') {
-        setupBalls(currentMode);
+        rsetupBalls(rcurrentMode);
     }
 }
 
 function mousePressed(event) {
-    if (uiActive || isUIBlocking(event)) {
-        if (isUIBlocking(event)) uiActive = true;
+    if (ruiActive || risUIBlocking(event)) {
+        if (risUIBlocking(event)) ruiActive = true;
         return;
     }
 
-    let mousePos = getMouseOnTable();
+    let mousePos = rgetMouseOnTable();
     if (!mousePos) return;
 
-    if (!isMouseOnTable(mousePos)) return;
+    if (!risMouseOnTable(mousePos)) return;
 
-    // Check if placing cue ball
-    if (isPlacingCueBall) {
+    // Check if placing rcue ball
+    if (risPlacingCueBall) {
         let localX = mousePos.x;
         let localY = mousePos.y;
         // console.log('placing at:', localX, localY);
@@ -471,32 +471,32 @@ function mousePressed(event) {
         let distToCenter = dist(localX, localY, dZoneX, dZoneY);
 
         if (localX < dZoneX && distToCenter < 75 && localX > 0 && localY > 0 && localY < TABLE_HEIGHT) {
-            Body.setPosition(cueBall.body, { x: localX, y: localY });
-            Body.setVelocity(cueBall.body, { x: 0, y: 0 });
-            isPlacingCueBall = false;
+            Body.setPosition(rcueBall.body, { x: localX, y: localY });
+            Body.setVelocity(rcueBall.body, { x: 0, y: 0 });
+            risPlacingCueBall = false;
         }
-    } else if (!isShooting && cueBall) {
-        cue.startAiming();
+    } else if (!risShooting && rcueBall) {
+        rcue.startAiming();
     }
 }
 
 function mouseReleased() {
-    if (cue && cue.isAiming) {
+    if (rcue && rcue.risAiming) {
         // Only trigger shot if UI is not active
-        // We don't check isMouseOnTable here because pulling back the cue
+        // We don't check risMouseOnTable here because pulling back the rcue
         // often moves the mouse off the table bounds.
-        if (!uiActive) {
-            cue.shoot();
+        if (!ruiActive) {
+            rcue.shoot();
         } else {
             // Cancel shot if UI became active (e.g. clicked a button while aiming)
-            cue.isAiming = false;
-            cue.power = 0;
+            rcue.risAiming = false;
+            rcue.power = 0;
         }
     }
-    // Note: uiActive is reset by specific UI close actions or click-outside
+    // Note: ruiActive is reset by specific UI close actions or click-outside
 }
 
-function isUIBlocking(event) {
+function risUIBlocking(event) {
     // Check if rules dropdown is open
     let rulesContent = document.getElementById('rules-content');
     if (rulesContent && !rulesContent.classList.contains('hidden')) {
@@ -515,36 +515,36 @@ function isUIBlocking(event) {
     return false;
 }
 
-function isMouseOnTable(pos) {
+function risMouseOnTable(pos) {
     // Add a buffer (RAIL_WIDTH) to allow clicking on the rim/rail to activate aiming
-    // This is crucial when the cue ball is tucked against the cushion.
+    // This is crucial when the rcue ball is tucked against the cushion.
     let buffer = RAIL_WIDTH;
     return pos.x >= -buffer && pos.x <= TABLE_WIDTH + buffer &&
         pos.y >= -buffer && pos.y <= TABLE_HEIGHT + buffer;
 }
 
-function drawTableToTexture() {
-    let pg = tableGraphics;
+function rdrawTableToTexture() {
+    let pg = rtableGraphics;
     
     // Clear the graphics buffer
     pg.clear();
     pg.background(0, 0, 0, 0);
 
     // Smooth colour transition
-    if (currentTableColour !== targetTableColour) {
-        tableColourTransition += 0.05;
-        if (tableColourTransition >= 1) {
-            currentTableColour = targetTableColour;
-            tableColourTransition = 0;
+    if (rcurrentTableColour !== rtargetTableColour) {
+        rtableColourTransition += 0.05;
+        if (rtableColourTransition >= 1) {
+            rcurrentTableColour = rtargetTableColour;
+            rtableColourTransition = 0;
         }
     }
 
     // Get current and target colours
-    let currentColours = TABLE_COLOURS[currentTableColour];
-    let targetColours = TABLE_COLOURS[targetTableColour];
+    let currentColours = TABLE_COLOURS[rcurrentTableColour];
+    let targetColours = TABLE_COLOURS[rtargetTableColour];
     
     // Interpolate colours for smooth transition
-    let t = tableColourTransition;
+    let t = rtableColourTransition;
     let centerR = lerp(currentColours.center[0], targetColours.center[0], t);
     let centerG = lerp(currentColours.center[1], targetColours.center[1], t);
     let centerB = lerp(currentColours.center[2], targetColours.center[2], t);
@@ -579,7 +579,7 @@ function drawTableToTexture() {
     pg.rect(TABLE_WIDTH - RAIL_WIDTH / 2, 0, RAIL_WIDTH / 2, TABLE_HEIGHT);
 
     // Draw Pockets (Seamless, dark with inner glow and rim)
-    for (let p of pockets) {
+    for (let p of rpockets) {
         // Outer shadow/Rim
         pg.fill(10, 10, 12);
         pg.circle(p.x, p.y, POCKET_RADIUS * 2.4);
@@ -606,7 +606,7 @@ function drawTableToTexture() {
         ctx.fill();
 
         // Beginner Mode: Pocket Highlighting
-        if (gameRulesMode === 'BEGINNER') {
+        if (rgameRulesMode === 'BEGINNER') {
             pg.stroke(212, 175, 55, 100); // Muted Gold
             pg.strokeWeight(1);
             pg.noFill();
@@ -616,13 +616,13 @@ function drawTableToTexture() {
 
         // Pocket Highlight Assistance (New Feature)
         // Subtly highlight the pocket the player is currently aiming towards
-        if (cue.isAiming && cueBall) {
-            let shotDir = (cue.angle + PI);
+        if (rcue.risAiming && rcueBall) {
+            let shotDir = (rcue.angle + PI);
             // Normalize shotDir to [-PI, PI] to match atan2
             shotDir = atan2(sin(shotDir), cos(shotDir));
 
-            let dx = p.x - cueBall.body.position.x;
-            let dy = p.y - cueBall.body.position.y;
+            let dx = p.x - rcueBall.body.position.x;
+            let dy = p.y - rcueBall.body.position.y;
             let angleToPocket = atan2(dy, dx);
 
             let diff = abs(shotDir - angleToPocket);
@@ -694,28 +694,28 @@ function drawTableToTexture() {
     // and keep the texture just for the playing surface.
 }
 
-function setupTable() {
+function rsetupTable() {
     // Define cushion physics bodies (static)
     // Make them extra thick to prevent high-speed tunneling
     const THICKNESS = 500;
-    const CUSHION_INSET = RAIL_WIDTH / 2; // Visual cushions extend 15px into table
+    const CUSHION_INSET = RAIL_WIDTH / 2; // Visual rcushions extend 15px into table
     const cushionOptions = { isStatic: true, restitution: 0.8, friction: 0.1 };
 
     // Top (Inner edge at CUSHION_INSET)
-    cushions.push(Bodies.rectangle(TABLE_WIDTH / 2, CUSHION_INSET - THICKNESS / 2, TABLE_WIDTH, THICKNESS, cushionOptions));
+    rcushions.push(Bodies.rectangle(TABLE_WIDTH / 2, CUSHION_INSET - THICKNESS / 2, TABLE_WIDTH, THICKNESS, cushionOptions));
     // Bottom (Inner edge at TABLE_HEIGHT - CUSHION_INSET)
-    cushions.push(Bodies.rectangle(TABLE_WIDTH / 2, (TABLE_HEIGHT - CUSHION_INSET) + THICKNESS / 2, TABLE_WIDTH, THICKNESS, cushionOptions));
+    rcushions.push(Bodies.rectangle(TABLE_WIDTH / 2, (TABLE_HEIGHT - CUSHION_INSET) + THICKNESS / 2, TABLE_WIDTH, THICKNESS, cushionOptions));
     // Left (Inner edge at CUSHION_INSET)
-    cushions.push(Bodies.rectangle(CUSHION_INSET - THICKNESS / 2, TABLE_HEIGHT / 2, THICKNESS, TABLE_HEIGHT, cushionOptions));
+    rcushions.push(Bodies.rectangle(CUSHION_INSET - THICKNESS / 2, TABLE_HEIGHT / 2, THICKNESS, TABLE_HEIGHT, cushionOptions));
     // Right (Inner edge at TABLE_WIDTH - CUSHION_INSET)
-    cushions.push(Bodies.rectangle((TABLE_WIDTH - CUSHION_INSET) + THICKNESS / 2, TABLE_HEIGHT / 2, THICKNESS, TABLE_HEIGHT, cushionOptions));
+    rcushions.push(Bodies.rectangle((TABLE_WIDTH - CUSHION_INSET) + THICKNESS / 2, TABLE_HEIGHT / 2, THICKNESS, TABLE_HEIGHT, cushionOptions));
 
-    World.add(world, cushions);
+    World.add(rworld, rcushions);
 
     // Define Pockets (Visual positions for now, collision logic later)
-    pockets = [
+    rpockets = [
         { x: 0, y: 0 },
-        { x: TABLE_WIDTH / 2, y: -5 }, // Middle pockets slightly offset
+        { x: TABLE_WIDTH / 2, y: -5 }, // Middle rpockets slightly offset
         { x: TABLE_WIDTH, y: 0 },
         { x: 0, y: TABLE_HEIGHT },
         { x: TABLE_WIDTH / 2, y: TABLE_HEIGHT + 5 },
@@ -723,37 +723,37 @@ function setupTable() {
     ];
 
     // Add Pocket Sensors
-    for (let p of pockets) {
+    for (let p of rpockets) {
         let sensor = Bodies.circle(p.x, p.y, POCKET_RADIUS, {
             isStatic: true,
             isSensor: true,
             label: 'pocket'
         });
-        World.add(world, sensor);
+        World.add(rworld, sensor);
     }
 }
 
-function setupBalls(mode) {
-    // Clear existing balls
-    for (let b of balls) {
-        World.remove(world, b.body);
+function rsetupBalls(mode) {
+    // Clear existing rballs
+    for (let b of rballs) {
+        World.remove(rworld, b.body);
     }
-    balls = [];
+    rballs = [];
     score = 0;
-    scores = { 1: 0, 2: 0 };
-    currentPlayer = 1;
-    ballsPottedThisTurn = 0;
-    currentBreak = 0;
-    foulCommitted = false;
-    isShooting = false;
-    totalShots = 0; // Reset shots for new frame/mode
+    rscores = { 1: 0, 2: 0 };
+    rcurrentPlayer = 1;
+    rballsPottedThisTurn = 0;
+    rcurrentBreak = 0;
+    rfoulCommitted = false;
+    risShooting = false;
+    rtotalShots = 0; // Reset shots for new frame/mode
 
     // Create Cue Ball
-    cueBall = new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2, 'white');
-    balls.push(cueBall);
+    rcueBall = new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2, 'white');
+    rballs.push(rcueBall);
 
     // Auto-start in playing mode for convenience
-    isPlacingCueBall = false;
+    risPlacingCueBall = false;
 
     // Mode 1: Triangle
 
@@ -766,45 +766,45 @@ function setupBalls(mode) {
             for (let j = 0; j <= i; j++) {
                 let x = startX + i * (BALL_RADIUS * 2 + 1);
                 let y = startY - (i * BALL_RADIUS) + (j * BALL_RADIUS * 2);
-                balls.push(new Ball(x, y, 'red'));
+                rballs.push(new Ball(x, y, 'red'));
             }
         }
-        // Add colored balls (simplified positions for standard snooker)
-        balls.push(new Ball(TABLE_WIDTH * 0.9, TABLE_HEIGHT / 2, 'black'));
-        balls.push(new Ball(TABLE_WIDTH * 0.75 - BALL_RADIUS * 4, TABLE_HEIGHT / 2, 'pink'));
-        balls.push(new Ball(TABLE_WIDTH * 0.5, TABLE_HEIGHT / 2, 'blue'));
-        balls.push(new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2 - 40, 'green'));
-        balls.push(new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2, 'brown'));
-        balls.push(new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2 + 40, 'yellow'));
+        // Add colored rballs (simplified positions for standard snooker)
+        rballs.push(new Ball(TABLE_WIDTH * 0.9, TABLE_HEIGHT / 2, 'black'));
+        rballs.push(new Ball(TABLE_WIDTH * 0.75 - BALL_RADIUS * 4, TABLE_HEIGHT / 2, 'pink'));
+        rballs.push(new Ball(TABLE_WIDTH * 0.5, TABLE_HEIGHT / 2, 'blue'));
+        rballs.push(new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2 - 40, 'green'));
+        rballs.push(new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2, 'brown'));
+        rballs.push(new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2 + 40, 'yellow'));
 
     } else if (mode === 2) { // Random Clusters
         for (let i = 0; i < 10; i++) {
             let x = random(TABLE_WIDTH * 0.5, TABLE_WIDTH - RAIL_WIDTH);
             let y = random(RAIL_WIDTH, TABLE_HEIGHT - RAIL_WIDTH);
-            balls.push(new Ball(x, y, 'red'));
+            rballs.push(new Ball(x, y, 'red'));
         }
         // Add a few colors randomly
-        balls.push(new Ball(random(TABLE_WIDTH / 2, TABLE_WIDTH), random(0, TABLE_HEIGHT), 'blue'));
-        balls.push(new Ball(random(TABLE_WIDTH / 2, TABLE_WIDTH), random(0, TABLE_HEIGHT), 'black'));
+        rballs.push(new Ball(random(TABLE_WIDTH / 2, TABLE_WIDTH), random(0, TABLE_HEIGHT), 'blue'));
+        rballs.push(new Ball(random(TABLE_WIDTH / 2, TABLE_WIDTH), random(0, TABLE_HEIGHT), 'black'));
 
     } else if (mode === 3) { // Practice
         // Just a few reds scattered
         for (let i = 0; i < 5; i++) {
             let x = random(TABLE_WIDTH * 0.3, TABLE_WIDTH - RAIL_WIDTH);
             let y = random(RAIL_WIDTH, TABLE_HEIGHT - RAIL_WIDTH);
-            balls.push(new Ball(x, y, 'red'));
+            rballs.push(new Ball(x, y, 'red'));
         }
     }
 
     // Initialize Dispenser Tube
-    let objectBallColors = balls
+    let objectBallColors = rballs
         .filter(b => b.color !== 'white')
         .map(b => b.color);
-    initDispenser(objectBallColors);
+    rinitDispenser(objectBallColors);
 }
 
-function drawBalls3D() {
-    for (let b of balls) {
+function rdrawBalls3D() {
+    for (let b of rballs) {
         b.show3D();
     }
 }
@@ -813,74 +813,74 @@ class Cue {
     constructor() {
         this.angle = 0;
         this.power = 0;
-        this.isAiming = false;
+        this.risAiming = false;
         this.maxPower = 30;
     }
 
     update() {
-        if (isPlacingCueBall) return;
+        if (risPlacingCueBall) return;
 
         // Raycasting for mouse interaction
-        let mousePos = getMouseOnTable();
+        let mousePos = rgetMouseOnTable();
         if (!mousePos) return;
 
-        let dx = mousePos.x - cueBall.body.position.x;
-        let dy = mousePos.y - cueBall.body.position.y;
+        let dx = mousePos.x - rcueBall.body.position.x;
+        let dy = mousePos.y - rcueBall.body.position.y;
         this.angle = atan2(dy, dx);
 
-        if (this.isAiming) {
-            let distToBall = dist(mousePos.x, mousePos.y, cueBall.body.position.x, cueBall.body.position.y);
+        if (this.risAiming) {
+            let distToBall = dist(mousePos.x, mousePos.y, rcueBall.body.position.x, rcueBall.body.position.y);
             this.power = constrain(map(distToBall, 50, 300, 0, this.maxPower), 0, this.maxPower);
         }
     }
 
     startAiming() {
-        this.isAiming = true;
+        this.risAiming = true;
     }
 
     shoot() {
-        if (!this.isAiming) return;
+        if (!this.risAiming) return;
 
         // Start Recording
-        lastShotRecording = [];
-        isRecording = true;
+        rlastShotRecording = [];
+        risRecording = true;
 
         let force = Vector.create(cos(this.angle + PI) * this.power * 0.002, sin(this.angle + PI) * this.power * 0.002);
-        Body.applyForce(cueBall.body, cueBall.body.position, force);
+        Body.applyForce(rcueBall.body, rcueBall.body.position, force);
 
         // Spawn Impact
-        impacts.push(new Impact(cueBall.body.position.x, cueBall.body.position.y));
+        rimpacts.push(new Impact(rcueBall.body.position.x, rcueBall.body.position.y));
 
-        this.isAiming = false;
+        this.risAiming = false;
         this.power = 0;
-        isShooting = true;
-        totalShots++;
+        risShooting = true;
+        rtotalShots++;
 
-        // Reset shooting flag after some time or when balls stop
-        // isShooting will be reset in checkTurnState() when balls stop moving
+        // Reset shooting flag after some time or when rballs stop
+        // risShooting will be reset in rcheckTurnState() when rballs stop moving
     }
 
     show3D() {
-        if (isPlacingCueBall) {
+        if (risPlacingCueBall) {
             // Draw placement hint (2D overlay or 3D text)
             // For simplicity, we skip 3D text or use a simple billboard
             return;
         }
 
-        let pos = cueBall.body.position;
+        let pos = rcueBall.body.position;
 
         // Disable depth test to ensure stick is always visible (on top layer)
         let gl = drawingContext;
         gl.disable(gl.DEPTH_TEST);
 
         push();
-        // Convert physics coordinates to 3D world coordinates
+        // Convert physics coordinates to 3D rworld coordinates
         // Physics: (0,0) is top-left of table. 3D: (0,0,0) is center of table.
         translate(pos.x - TABLE_WIDTH / 2, -BALL_RADIUS, pos.y - TABLE_HEIGHT / 2);
         rotateY(-this.angle); // p5 3D rotation is Y-axis for horizontal
 
         // Aim Line (Only when actively aiming)
-        if (this.isAiming) {
+        if (this.risAiming) {
             // Radial Power Halo (Minimal Luxury Style)
             push();
             translate(0, BALL_RADIUS - 0.5, 0); // Position on table surface
@@ -900,14 +900,14 @@ class Cue {
             line(0, 0, 0, -this.power * 5, 0, 0); // Pull back visual
 
             // Forward projection
-            let guideAlpha = gameRulesMode === 'BEGINNER' ? 80 : 30;
-            let guideLength = gameRulesMode === 'BEGINNER' ? 800 : 500;
+            let guideAlpha = rgameRulesMode === 'BEGINNER' ? 80 : 30;
+            let guideLength = rgameRulesMode === 'BEGINNER' ? 800 : 500;
             stroke(255, 255, 255, guideAlpha);
             line(0, 0, 0, guideLength, 0, 0);
         }
 
         // Cue Stick
-        let stickOffset = this.isAiming ? this.power * 5 + 20 : 20;
+        let stickOffset = this.risAiming ? this.power * 5 + 20 : 20;
         // Cylinder is centered, so we need to shift it by half its length (150) + offset
         translate(stickOffset + 150, 0, 0);
 
@@ -933,7 +933,7 @@ class Ball {
             friction: 0.005,
             frictionAir: 0.02 // Simulate rolling resistance
         });
-        World.add(world, this.body);
+        World.add(rworld, this.body);
         this.trail = [];
     }
 
@@ -948,7 +948,7 @@ class Ball {
             this.trail.shift();
         }
 
-        renderBall3D(pos.x, pos.y, this.color, this.r);
+        rrenderBall3D(pos.x, pos.y, this.color, this.r);
 
         // Draw Trail (2D lines in 3D space)
         if (this.trail.length > 1) {
@@ -994,12 +994,12 @@ function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 }
 
-function drawImpacts3D() {
-    for (let i = impacts.length - 1; i >= 0; i--) {
-        impacts[i].update();
-        impacts[i].show3D();
-        if (impacts[i].isDead()) {
-            impacts.splice(i, 1);
+function rdrawImpacts3D() {
+    for (let i = rimpacts.length - 1; i >= 0; i--) {
+        rimpacts[i].update();
+        rimpacts[i].show3D();
+        if (rimpacts[i].isDead()) {
+            rimpacts.splice(i, 1);
         }
     }
 }
@@ -1031,19 +1031,19 @@ class Impact {
     }
 }
 
-// Raycasting helper to find mouse position on the 3D table plane (y = 0 in 3D world, but our table is at y=0 relative to center)
-// Actually, our table plane is at y=0 in 3D world space (after translate).
+// Raycasting helper to find mouse position on the 3D table plane (y = 0 in 3D rworld, but our table is at y=0 relative to center)
+// Actually, our table plane is at y=0 in 3D rworld space (after translate).
 // We need to cast a ray from camera to mouse position and find intersection with y=0 plane.
-function getMouseOnTable() {
+function rgetMouseOnTable() {
     // 1. Normalized Device Coordinates (NDC)
     let ndcX = (mouseX / width) * 2 - 1;
     let ndcY = (mouseY / height) * 2 - 1;
 
     // 2. Camera Properties
     // Re-calculate camera position exactly as in draw()
-    let camX = camRadius * sin(camPhi) * sin(camAngle);
-    let camY = -camRadius * cos(camPhi);
-    let camZ = camRadius * sin(camPhi) * cos(camAngle);
+    let camX = rcamRadius * sin(rcamPhi) * sin(rcamAngle);
+    let camY = -rcamRadius * cos(rcamPhi);
+    let camZ = rcamRadius * sin(rcamPhi) * cos(rcamAngle);
 
     // LookAt position (0,0,0)
     let center = createVector(0, 0, 0);
@@ -1085,9 +1085,9 @@ function getMouseOnTable() {
     let hScale = tanFov * aspect;
 
     // Ray direction in camera local space
-    // x maps to s, y maps to u (but inverted because screen Y is down, world U is up? or p5 Y is down?)
+    // x maps to s, y maps to u (but inverted because screen Y is down, rworld U is up? or p5 Y is down?)
     // In p5, positive Y is down. So ndcY increases downwards.
-    // Our 'u' vector calculated above is "Up" in world space (0,1,0) roughly.
+    // Our 'u' vector calculated above is "Up" in rworld space (0,1,0) roughly.
     // So we should probably subtract u * ndcY.
 
     let rayDir = p5.Vector.mult(f, 1);
@@ -1121,69 +1121,69 @@ function getMouseOnTable() {
     return createVector(tableX, tableY);
 }
 
-function checkTurnState() {
-    if (!isShooting) return;
+function rcheckTurnState() {
+    if (!risShooting) return;
 
     let isMoving = false;
     // Check if any ball is moving
-    for (let b of balls) {
+    for (let b of rballs) {
         if (Vector.magnitude(b.body.velocity) > 0.05) {
             isMoving = true;
             break;
         }
     }
 
-    // Also check if cue ball is off table (handled in collision but good safety)
-    if (!cueBall) isMoving = true;
+    // Also check if rcue ball is off table (handled in collision but good safety)
+    if (!rcueBall) isMoving = true;
 
     if (!isMoving) {
         // Turn Logic
-        if (ballsPottedThisTurn === 0 || foulCommitted) {
-            if (foulCommitted) {
-                if (gameRulesMode === 'BEGINNER') {
-                    showFeedback("FOUL – TURN SWITCHED");
+        if (rballsPottedThisTurn === 0 || rfoulCommitted) {
+            if (rfoulCommitted) {
+                if (rgameRulesMode === 'BEGINNER') {
+                    rshowFeedback("FOUL – TURN SWITCHED");
                 } else {
-                    showFeedback("FOUL");
+                    rshowFeedback("FOUL");
                 }
             } else {
-                showFeedback("MISS");
+                rshowFeedback("MISS");
             }
 
             // Switch Turn
             setTimeout(() => {
-                currentPlayer = currentPlayer === 1 ? 2 : 1;
-                currentBreak = 0; // Reset break on turn switch
-                showFeedback("TURN SWITCHED");
+                rcurrentPlayer = rcurrentPlayer === 1 ? 2 : 1;
+                rcurrentBreak = 0; // Reset break on turn switch
+                rshowFeedback("TURN SWITCHED");
             }, 1000);
         } else {
-            showFeedback("GOOD POT");
-            if (currentBreak > 0) {
-                setTimeout(() => showFeedback("BREAK CONTINUES"), 1500);
+            rshowFeedback("GOOD POT");
+            if (rcurrentBreak > 0) {
+                setTimeout(() => rshowFeedback("BREAK CONTINUES"), 1500);
             }
         }
 
         // Reset Turn State
-        ballsPottedThisTurn = 0;
-        foulCommitted = false;
-        isShooting = false;
-        isRecording = false; // Stop recording when balls stop
+        rballsPottedThisTurn = 0;
+        rfoulCommitted = false;
+        risShooting = false;
+        risRecording = false; // Stop recording when rballs stop
 
         // Trigger Smart Camera Snap
-        snapPending = true;
-        snapStartTime = millis();
+        rsnapPending = true;
+        rsnapStartTime = millis();
 
         // Check for Frame Completion
-        if (balls.length === 1 && cueBall) {
-            showFeedback("FRAME COMPLETED");
-            framesCompleted++;
+        if (rballs.length === 1 && rcueBall) {
+            rshowFeedback("FRAME COMPLETED");
+            rframesCompleted++;
             setTimeout(() => {
-                setupBalls(currentMode);
+                rsetupBalls(rcurrentMode);
             }, 2000);
         }
     }
 }
 
-function drawTableFrame() {
+function rdrawTableFrame() {
     let railDepth = 40;
     let railHeight = 30;
     let cushionDepth = 15;
@@ -1253,7 +1253,7 @@ function drawTableFrame() {
 
     // Pockets (Visual depth)
     fill(0);
-    for (let p of pockets) {
+    for (let p of rpockets) {
         push();
         translate(p.x - TABLE_WIDTH / 2, p.y - TABLE_HEIGHT / 2, 0);
         cylinder(POCKET_RADIUS, 20);
@@ -1261,7 +1261,7 @@ function drawTableFrame() {
     }
 }
 
-function drawArena() {
+function rdrawArena() {
     // 1. Arena Floor (Large, grounded plane)
     push();
     translate(0, 200, 0); // Below table
@@ -1324,7 +1324,7 @@ function drawArena() {
     pop();
 }
 
-function showFeedback(message) {
+function rshowFeedback(message) {
     let el = document.getElementById('shot-feedback');
     if (!el) return;
 
@@ -1353,35 +1353,35 @@ function showFeedback(message) {
     }, 1500);
 }
 
-function toggleRules() {
-    gameRulesMode = gameRulesMode === 'STANDARD' ? 'BEGINNER' : 'STANDARD';
-    updateRulesUI();
+function rtoggleRules() {
+    rgameRulesMode = rgameRulesMode === 'STANDARD' ? 'BEGINNER' : 'STANDARD';
+    rupdateRulesUI();
 
     // Immediate feedback
-    showFeedback(`MODE: ${gameRulesMode}`);
+    rshowFeedback(`MODE: ${rgameRulesMode}`);
 }
 
-function toggleRulesDropdown() {
+function rtoggleRulesDropdown() {
     let content = document.getElementById('rules-content');
     if (content) {
         let isOpening = content.classList.contains('hidden');
         content.classList.toggle('hidden');
-        uiActive = isOpening;
+        ruiActive = isOpening;
     }
 }
 
-function updateRulesUI() {
+function rupdateRulesUI() {
     let header = document.getElementById('rules-header');
     let list = document.getElementById('rules-list');
     let btn = document.getElementById('rules-mode-btn');
 
     if (!header || !list || !btn) return;
 
-    header.innerText = `RULES: ${gameRulesMode} ▾`;
-    btn.innerText = `SWITCH TO ${gameRulesMode === 'STANDARD' ? 'BEGINNER' : 'STANDARD'}`;
+    header.innerText = `RULES: ${rgameRulesMode} ▾`;
+    btn.innerText = `SWITCH TO ${rgameRulesMode === 'STANDARD' ? 'BEGINNER' : 'STANDARD'}`;
 
     let rules = [];
-    if (gameRulesMode === 'BEGINNER') {
+    if (rgameRulesMode === 'BEGINNER') {
         rules = [
             "Simplified fouls (no point penalties)",
             "Enhanced aiming guides enabled",
@@ -1399,50 +1399,50 @@ function updateRulesUI() {
 
     list.innerHTML = rules.map(r => `<li>${r}</li>`).join('');
 }
-function recordFrame() {
+function rrecordFrame() {
     let frame = {
-        balls: balls.map(b => ({
+        rballs: rballs.map(b => ({
             x: b.body.position.x,
             y: b.body.position.y,
             color: b.color
         }))
     };
-    lastShotRecording.push(frame);
+    rlastShotRecording.push(frame);
 }
 
-function playVisualReplay() {
-    if (lastShotRecording.length === 0) {
-        showFeedback("NO SHOT TO REPLAY");
+function rplayVisualReplay() {
+    if (rlastShotRecording.length === 0) {
+        rshowFeedback("NO SHOT TO REPLAY");
         return;
     }
-    if (isShooting || isReplaying) return;
+    if (risShooting || risReplaying) return;
 
-    isReplaying = true;
-    replayFrameIndex = 0;
-    showFeedback("REPLAYING SHOT");
+    risReplaying = true;
+    rreplayFrameIndex = 0;
+    rshowFeedback("REPLAYING SHOT");
 }
 
-function updatePlaybackIndex() {
-    if (replayFrameIndex >= lastShotRecording.length) {
-        isReplaying = false;
-        showFeedback("REPLAY FINISHED");
+function rupdatePlaybackIndex() {
+    if (rreplayFrameIndex >= rlastShotRecording.length) {
+        risReplaying = false;
+        rshowFeedback("REPLAY FINISHED");
         return;
     }
-    replayFrameIndex++;
+    rreplayFrameIndex++;
 }
 
-function drawReplayBalls3D() {
+function rdrawReplayBalls3D() {
     // Safety check for index
-    let idx = min(replayFrameIndex, lastShotRecording.length - 1);
-    let frame = lastShotRecording[idx];
+    let idx = min(rreplayFrameIndex, rlastShotRecording.length - 1);
+    let frame = rlastShotRecording[idx];
     if (!frame) return;
 
-    for (let b of frame.balls) {
-        renderBall3D(b.x, b.y, b.color, BALL_RADIUS);
+    for (let b of frame.rballs) {
+        rrenderBall3D(b.x, b.y, b.color, BALL_RADIUS);
     }
 }
 
-function renderBall3D(x, y, ballColor, r) {
+function rrenderBall3D(x, y, ballColor, r) {
     push();
     translate(x - TABLE_WIDTH / 2, -BALL_RADIUS, y - TABLE_HEIGHT / 2);
 
@@ -1462,7 +1462,7 @@ function renderBall3D(x, y, ballColor, r) {
     pop();
 }
 
-function initDispenser(colors) {
+function rinitDispenser(colors) {
     let tube = document.getElementById('ball-dispenser-tube');
     if (!tube) return;
     tube.innerHTML = '';
@@ -1473,7 +1473,7 @@ function initDispenser(colors) {
     }
 }
 
-function removeBallFromDispenser(color) {
+function rremoveBallFromDispenser(color) {
     let tube = document.getElementById('ball-dispenser-tube');
     if (!tube) return;
     let ballsInTube = tube.getElementsByClassName(`ball-${color}`);
@@ -1580,24 +1580,24 @@ function removeBallFromDispenser(color) {
 }
 
 // Slow-Motion Toggle Function
-function toggleSlowMotion() {
-    slowMotionEnabled = !slowMotionEnabled;
+function rtoggleSlowMotion() {
+    rslowMotionEnabled = !rslowMotionEnabled;
 
     let btn = document.getElementById('slowmo-btn');
 
-    if (slowMotionEnabled) {
-        engine.timing.timeScale = 0.5; // 50% speed
+    if (rslowMotionEnabled) {
+        rengine.timing.timeScale = 0.5; // 50% speed
         btn.textContent = 'SLOW-MO: ON';
         btn.classList.add('active');
     } else {
-        engine.timing.timeScale = 1.0; // Normal speed
+        rengine.timing.timeScale = 1.0; // Normal speed
         btn.textContent = 'SLOW-MO: OFF';
         btn.classList.remove('active');
     }
 }
 
 // Board Colour Options Functions
-function initBoardColourOptions() {
+function rinitBoardColourOptions() {
     // Click outside to close dropdown
     window.addEventListener('click', (e) => {
         let container = document.getElementById('colour-dropdown-container');
@@ -1610,15 +1610,15 @@ function initBoardColourOptions() {
     });
 }
 
-function toggleColourDropdown() {
+function rtoggleColourDropdown() {
     let content = document.getElementById('colour-content');
     content.classList.toggle('hidden');
 }
 
-function selectTableColour(colour) {
+function rselectTableColour(colour) {
     if (TABLE_COLOURS[colour]) {
-        targetTableColour = colour;
-        tableColourTransition = 0;
+        rtargetTableColour = colour;
+        rtableColourTransition = 0;
         
         // Update display name
         let colourName = colour.charAt(0).toUpperCase() + colour.slice(1);
@@ -1629,15 +1629,15 @@ function selectTableColour(colour) {
     }
 }
 
-function changeTableColour(colour) {
+function rchangeTableColour(colour) {
     if (TABLE_COLOURS[colour]) {
-        targetTableColour = colour;
-        tableColourTransition = 0;
+        rtargetTableColour = colour;
+        rtableColourTransition = 0;
     }
 }
 
 // error handling
-function showError(message) {
+function rshowError(message) {
     const loadingScreen = document.getElementById('loading-screen');
     const errorScreen = document.getElementById('error-screen');
     if (loadingScreen) loadingScreen.style.display = 'none';

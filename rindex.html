@@ -12,7 +12,7 @@ Student Number : 240621557
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium Snooker</title>
     
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="rstyle.css">
     
     <!-- libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
@@ -42,7 +42,7 @@ Student Number : 240621557
         </div>
     </div>
 
-    <a href="home.html" id="home-button">
+    <a href="rhome.html" id="home-button">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -86,37 +86,37 @@ Student Number : 240621557
             <div id="shot-feedback"></div>
         </div>
         <div id="rules-dropdown-container">
-            <div id="rules-header" onclick="toggleRulesDropdown()">RULES: STANDARD ▾</div>
+            <div id="rules-header" onclick="rtoggleRulesDropdown()">RULES: STANDARD ▾</div>
             <div id="rules-content" class="hidden">
                 <ul id="rules-list"></ul>
-                <button id="rules-mode-btn" onclick="toggleRules()">SWITCH TO BEGINNER</button>
+                <button id="rules-mode-btn" onclick="rtoggleRules()">SWITCH TO BEGINNER</button>
             </div>
         </div>
 
         <div id="colour-dropdown-container">
-            <div id="colour-header" onclick="toggleColourDropdown()">
+            <div id="colour-header" onclick="rtoggleColourDropdown()">
                 <span>TABLE: </span>
                 <span id="current-colour-name">GREEN</span>
                 <span> ▾</span>
             </div>
             <div id="colour-content" class="hidden">
-                <div class="colour-option" data-colour="green" onclick="selectTableColour('green')">
+                <div class="colour-option" data-colour="green" onclick="rselectTableColour('green')">
                     <span class="colour-swatch-small" style="background: rgb(30, 100, 60);"></span>
                     <span>Green</span>
                 </div>
-                <div class="colour-option" data-colour="red" onclick="selectTableColour('red')">
+                <div class="colour-option" data-colour="red" onclick="rselectTableColour('red')">
                     <span class="colour-swatch-small" style="background: rgb(100, 20, 20);"></span>
                     <span>Red</span>
                 </div>
-                <div class="colour-option" data-colour="black" onclick="selectTableColour('black')">
+                <div class="colour-option" data-colour="black" onclick="rselectTableColour('black')">
                     <span class="colour-swatch-small" style="background: rgb(20, 20, 25);"></span>
                     <span>Black</span>
                 </div>
-                <div class="colour-option" data-colour="blue" onclick="selectTableColour('blue')">
+                <div class="colour-option" data-colour="blue" onclick="rselectTableColour('blue')">
                     <span class="colour-swatch-small" style="background: rgb(20, 50, 90);"></span>
                     <span>Blue</span>
                 </div>
-                <div class="colour-option" data-colour="pink" onclick="selectTableColour('pink')">
+                <div class="colour-option" data-colour="pink" onclick="rselectTableColour('pink')">
                     <span class="colour-swatch-small" style="background: rgb(255, 120, 180);"></span>
                     <span>Pink</span>
                 </div>
@@ -125,8 +125,8 @@ Student Number : 240621557
 
     </div>
 
-    <button id="replay-btn" onclick="playVisualReplay()">REPLAY SHOT</button>
-    <button id="slowmo-btn" onclick="toggleSlowMotion()">SLOW-MO: OFF</button>
+    <button id="replay-btn" onclick="rplayVisualReplay()">REPLAY SHOT</button>
+    <button id="slowmo-btn" onclick="rtoggleSlowMotion()">SLOW-MO: OFF</button>
     <div id="camera-controls">
         <div class="slider-group">
             <label>ROTATE</label>
@@ -138,8 +138,8 @@ Student Number : 240621557
         </div>
     </div>
     </div>
-    
-    <script src="sketch.js"></script>
+
+    <script src="rsketch.js"></script>
 </body>
 
 </html>

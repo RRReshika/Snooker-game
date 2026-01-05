@@ -6,15 +6,15 @@ A professional snooker simulation built with p5.js and Matter.js.
 
 ```
 Snooker-game/
-├── index.html              # Main game page
-├── home.html              # Landing page
-├── extensions.html        # Documentation page
-├── style.css              # Game page styles
-├── home-styles.css        # Landing page styles
-├── extensions-styles.css  # Documentation styles
-├── sketch.js              # Main game logic (p5.js + Matter.js)
-├── home-script.js         # Landing page animations
-└── extensions-script.js   # Documentation interactions
+├── rindex.html              # Main game page
+├── rhome.html              # Landing page
+├── rextensions.html        # Documentation page
+├── rstyle.css              # Game page styles
+├── rhome-styles.css        # Landing page styles
+├── rextensions-styles.css  # Documentation styles
+├── rsketch.js              # Main game logic (p5.js + Matter.js)
+├── rhome-script.js         # Landing page animations
+└── rextensions-script.js   # Documentation interactions
 ```
 
 ## Features
@@ -36,4 +36,20 @@ Snooker-game/
 - Turn indicators
 - Automatic foul detection
 - Frame and shot counter
+
+## Technologies Used
+
+- p5.js v1.9.0 - Canvas rendering
+- Matter.js v0.19.0 - Physics engine
+- Vanilla JavaScript
+- CSS3 animations
+- Google Fonts (Montserrat, Inter, Cormorant Garamond)
+
+## Design
+
+The project uses a broadcast-quality aesthetic inspired by professional snooker:
+- Dark backgrounds (#0d0e12, #1a1f24)
+- Gold accents (#b89a62, #d4af69)
+- Frosted glass UI elements
+- Smooth animations
 
