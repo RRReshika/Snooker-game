@@ -2,19 +2,30 @@
 
 A professional broadcast-quality snooker simulation built with p5.js and Matter.js.
 
+## Naming Convention
+
+**All files and variables in this project use an 'r' prefix** (e.g., `rindex.html`, `rsketch.js`, `rballs`, `rengine`).
+
+**Purpose:**
+- **Namespace Protection**: Prevents naming conflicts with p5.js built-in functions and Matter.js global variables
+- **Code Organization**: Clearly distinguishes project-specific code from library code
+- **Consistency**: Maintains uniform naming across HTML, CSS, JavaScript, and all game objects
+
+This convention ensures clean separation between custom game logic and external library functionality throughout the entire codebase.
+
 ## Project Structure
 
 ```
 Snooker-game/
-├── index.html              # Main game page
-├── home.html              # Landing page
-├── extensions.html        # Documentation page
-├── style.css              # Game page styles
-├── home-styles.css        # Landing page styles
-├── extensions-styles.css  # Documentation styles
-├── sketch.js              # Main game logic (p5.js + Matter.js)
-├── home-script.js         # Landing page animations
-└── extensions-script.js   # Documentation interactions
+├── rindex.html              # Main game page
+├── rhome.html               # Landing page
+├── rextensions.html         # Documentation page
+├── rstyle.css               # Game page styles
+├── rhome-styles.css         # Landing page styles
+├── rextensions-styles.css   # Documentation styles
+├── rsketch.js               # Main game logic (p5.js + Matter.js)
+├── rhome-script.js          # Landing page animations
+└── rextensions-script.js    # Documentation interactions
 ```
 
 ## Features

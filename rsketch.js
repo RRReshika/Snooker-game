@@ -161,13 +161,13 @@ function setup() {
 
         // setup physics
         rengine = Engine.create();
-        rworld = rengine.rworld;
+        rworld = rengine.world;
 
         // tried different values here - 10 works best for smooth collisions
         rengine.positionIterations = 10;
         rengine.velocityIterations = 10;
 
-        rengine.rworld.gravity.y = 0; // no gravity for top-down view
+        rengine.world.gravity.y = 0; // no gravity for top-down view
 
         rsetupTable();
         rsetupBalls(1);
@@ -836,22 +836,64 @@ function rsetupBalls(mode) {
         rballs.push(new Ball(TABLE_WIDTH * 0.2, TABLE_HEIGHT / 2 + 40, 'yellow'));
 
     } else if (mode === 2) { // Random Clusters
-        for (let i = 0; i < 10; i++) {
-            let x = random(TABLE_WIDTH * 0.5, TABLE_WIDTH - RAIL_WIDTH);
-            let y = random(RAIL_WIDTH, TABLE_HEIGHT - RAIL_WIDTH);
+        // Create 3 randomly positioned clusters with different formations
+        
+        // Cluster 1: Random position, tight pack (4-6 balls)
+        let cluster1X = random(TABLE_WIDTH * 0.5, TABLE_WIDTH * 0.85);
+        let cluster1Y = random(TABLE_HEIGHT * 0.2, TABLE_HEIGHT * 0.8);
+        let cluster1Size = int(random(4, 7));
+        for (let i = 0; i < cluster1Size; i++) {
+            let offsetX = random(-BALL_RADIUS * 2, BALL_RADIUS * 2);
+            let offsetY = random(-BALL_RADIUS * 2, BALL_RADIUS * 2);
+            rballs.push(new Ball(cluster1X + offsetX, cluster1Y + offsetY, 'red'));
+        }
+        
+        // Cluster 2: Random position, medium spread (3-5 balls)
+        let cluster2X = random(TABLE_WIDTH * 0.5, TABLE_WIDTH * 0.85);
+        let cluster2Y = random(TABLE_HEIGHT * 0.2, TABLE_HEIGHT * 0.8);
+        let cluster2Size = int(random(3, 6));
+        for (let i = 0; i < cluster2Size; i++) {
+            let angle = random(TWO_PI);
+            let distance = random(BALL_RADIUS, BALL_RADIUS * 3);
+            let x = cluster2X + cos(angle) * distance;
+            let y = cluster2Y + sin(angle) * distance;
             rballs.push(new Ball(x, y, 'red'));
         }
-        // Add a few colors randomly
-        rballs.push(new Ball(random(TABLE_WIDTH / 2, TABLE_WIDTH), random(0, TABLE_HEIGHT), 'blue'));
-        rballs.push(new Ball(random(TABLE_WIDTH / 2, TABLE_WIDTH), random(0, TABLE_HEIGHT), 'black'));
+        
+        // Cluster 3: Random position, loose spread (2-4 balls)
+        let cluster3X = random(TABLE_WIDTH * 0.5, TABLE_WIDTH * 0.85);
+        let cluster3Y = random(TABLE_HEIGHT * 0.2, TABLE_HEIGHT * 0.8);
+        let cluster3Size = int(random(2, 5));
+        for (let i = 0; i < cluster3Size; i++) {
+            let offsetX = random(-BALL_RADIUS * 4, BALL_RADIUS * 4);
+            let offsetY = random(-BALL_RADIUS * 4, BALL_RADIUS * 4);
+            rballs.push(new Ball(cluster3X + offsetX, cluster3Y + offsetY, 'red'));
+        }
+        
+        // Add colored balls at random positions
+        rballs.push(new Ball(random(TABLE_WIDTH * 0.5, TABLE_WIDTH - RAIL_WIDTH), random(RAIL_WIDTH, TABLE_HEIGHT - RAIL_WIDTH), 'blue'));
+        rballs.push(new Ball(random(TABLE_WIDTH * 0.5, TABLE_WIDTH - RAIL_WIDTH), random(RAIL_WIDTH, TABLE_HEIGHT - RAIL_WIDTH), 'black'));
 
-    } else if (mode === 3) { // Practice
-        // Just a few reds scattered
-        for (let i = 0; i < 5; i++) {
-            let x = random(TABLE_WIDTH * 0.3, TABLE_WIDTH - RAIL_WIDTH);
-            let y = random(RAIL_WIDTH, TABLE_HEIGHT - RAIL_WIDTH);
+    } else if (mode === 3) { // Practice - Line Formation
+        // Create a diagonal line of reds from top-right to bottom-center
+        let startX = TABLE_WIDTH * 0.75;
+        let startY = TABLE_HEIGHT * 0.2;
+        let endX = TABLE_WIDTH * 0.5;
+        let endY = TABLE_HEIGHT * 0.7;
+        
+        // Place 10 reds along the diagonal line
+        for (let i = 0; i < 10; i++) {
+            let t = i / 9; // Interpolation factor (0 to 1)
+            let x = lerp(startX, endX, t);
+            let y = lerp(startY, endY, t);
             rballs.push(new Ball(x, y, 'red'));
         }
+        
+        // Add blue ball on the left side
+        rballs.push(new Ball(TABLE_WIDTH * 0.3, TABLE_HEIGHT * 0.4, 'blue'));
+        
+        // Add black ball at the end of the line (right side)
+        rballs.push(new Ball(TABLE_WIDTH * 0.85, TABLE_HEIGHT * 0.4, 'black'));
     }
 
     // Initialize Dispenser Tube
