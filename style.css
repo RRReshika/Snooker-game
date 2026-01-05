@@ -1,28 +1,8 @@
-/* ===================================
-   PREMIUM SNOOKER GAME STYLES
-   
-   This stylesheet provides the UI styling for the snooker simulation.
-   Features include:
-   - Loading screen animations
-   - Player score panels
-   - Game controls and dropdowns
-   - Camera control sliders
-   - Responsive broadcast-quality design
-   
-   Color Scheme:
-   - Background: Dark charcoal (#0d0e12, #1a1f24)
-   - Accent: Muted gold (#b89a62, #d4af69)
-   - Text: Light grey (#e0e0e0)
-   =================================== */
-
-/* ===================================
-   BASE STYLES
-   =================================== */
+/* Main styles for game page */
 
 body {
     margin: 0;
     padding: 0;
-    /* Dark gradient background for cinematic effect */
     background: radial-gradient(circle at center, #1a1f24 0%, #0d0e12 100%);
     color: #e0e0e0;
     font-family: 'Inter', 'Roboto', sans-serif;
@@ -33,13 +13,7 @@ body {
     align-items: center;
 }
 
-/* ===================================
-   LOADING SCREEN
-   
-   Displays "ENTERING ARENA" message with animated dots.
-   Automatically zooms in and fades out after 2.5 seconds.
-   =================================== */
-
+/* Loading screen animation */
 #loading-screen {
     position: fixed;
     top: 0;
@@ -51,12 +25,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000; /* Ensure it's above all other elements */
-    /* Zoom animation starts after 2.5s delay */
+    z-index: 10000;
     animation: zoomIn 2s ease-out 2.5s forwards;
 }
-
-/* Zoom-in effect that scales the screen 3x and fades to transparent */
 
 @keyframes zoomIn {
     0% {
@@ -96,6 +67,7 @@ body {
     margin-bottom: 2rem;
 }
 
+/* animated dots */
 .loading-dots {
     display: flex;
     gap: 1rem;
@@ -122,7 +94,7 @@ body {
     animation-delay: 0.6s;
 }
 
-/* Pulse animation creates breathing effect for loading dots */
+/* pulse effect for dots */
 @keyframes pulse {
     0%, 100% {
         opacity: 0.3;
@@ -134,13 +106,7 @@ body {
     }
 }
 
-/* ===================================
-   HOME BUTTON
-   
-   Navigation button positioned at bottom-left.
-   Includes arrow icon and fades in after loading screen.
-   =================================== */
-
+/* home button - back to landing page */
 #home-button {
     position: fixed;
     bottom: 30px;
@@ -149,7 +115,6 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 12px 20px;
-    /* Frosted glass effect */
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(184, 154, 98, 0.2);
@@ -160,12 +125,9 @@ body {
     letter-spacing: 0.15em;
     transition: all 0.3s ease;
     z-index: 1000;
-    /* Hidden initially, fades in after 3 seconds */
     opacity: 0;
     animation: fadeInButton 0.5s ease-out 3s forwards;
 }
-
-/* Fade-in animation for delayed appearance */
 
 @keyframes fadeInButton {
     to {
@@ -185,23 +147,14 @@ body {
     height: 18px;
 }
 
-/* ===================================
-   GAME CONTAINER
-   
-   Main canvas container that holds the p5.js rendering.
-   Zooms in from 30% to full size after loading screen.
-   =================================== */
-
+/* game canvas container */
 #game-container {
     position: relative;
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-    /* Hidden initially, appears after loading */
     opacity: 0;
     transform: scale(0.3);
     animation: gameZoomIn 1s ease-out 2.5s forwards;
 }
-
-/* Zoom and fade-in animation for game canvas */
 
 @keyframes gameZoomIn {
     to {
@@ -210,14 +163,7 @@ body {
     }
 }
 
-/* ===================================
-   UI OVERLAY LAYER
-   
-   Transparent layer positioned over the game canvas.
-   Contains all interface elements (scores, controls).
-   Pointer events disabled except for interactive children.
-   =================================== */
-
+/* UI overlay for scores and controls */
 #ui-layer {
     position: absolute;
     top: 0;
@@ -256,35 +202,32 @@ body {
     border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Player 2 positioned at top-right */
 #player2-panel {
     right: 40px;
     align-items: flex-end;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Vertical accent line that glows when player is active */
+/* accent line on side */
 .player-panel::before {
     content: '';
     position: absolute;
     top: 15%;
     height: 70%;
     width: 1px;
-    background: rgba(212, 175, 55, 0.3); /* Muted gold */
+    background: rgba(212, 175, 55, 0.3);
     transition: all 0.5s ease;
 }
 
-/* Position accent line on left for Player 1 */
 #player1-panel::before {
     left: 0;
 }
 
-/* Position accent line on right for Player 2 */
 #player2-panel::before {
     right: 0;
 }
 
-/* Small indicator dot that appears when player is active */
+/* active player indicator */
 .player-panel::after {
     content: '';
     position: absolute;
@@ -330,6 +273,7 @@ body {
     color: rgba(212, 175, 55, 1);
 }
 
+/* breathing effect for active score */
 @keyframes breathe {
 
     0%,
@@ -416,6 +360,7 @@ body {
     margin-bottom: 5px;
 }
 
+/* feedback messages */
 #shot-feedback {
     display: flex;
     flex-direction: column;
@@ -441,7 +386,6 @@ body {
 .feedback-text .switched {
     animation: slide-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     color: #d4af37;
-    /* Muted Gold */
     text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
 }
 
@@ -457,6 +401,7 @@ body {
     animation: grow-line 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* text slide animations */
 @keyframes slide-left {
     0% {
         transform: translateX(-100px);
@@ -601,10 +546,7 @@ body {
     border-color: #d4af37;
 }
 
-/* Panels moved to #header-container */
-
-
-
+/* camera angle controls */
 #camera-controls {
     position: absolute;
     bottom: 20px;
@@ -641,18 +583,16 @@ input[type=range]:hover {
     opacity: 1;
 }
 
+/* ball dispenser tube on left */
 #ball-dispenser-tube {
     position: absolute;
     left: 40px;
     top: 220px;
-    /* Moved down to avoid overlap with Player 1 panel */
     width: 28px;
     height: 460px;
-    /* Reduced height */
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(12px);
     border: 1.5px solid rgba(212, 175, 55, 0.4);
-    /* Muted Gold */
     outline: 1px solid rgba(212, 175, 55, 0.1);
     border-radius: 15px;
     display: flex;
@@ -715,6 +655,7 @@ input[type=range]:hover {
     filter: blur(2px);
 }
 
+/* replay and slowmo buttons */
 #replay-btn {
     position: absolute;
     bottom: 30px;
@@ -788,6 +729,7 @@ input[type=range]:hover {
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
 }
 
+/* frame/balls/shot counter */
 #match-progress-panel {
     padding: 8px 20px;
     background: rgba(255, 255, 255, 0.03);
@@ -822,17 +764,14 @@ input[type=range]:hover {
     font-size: 16px;
     font-weight: 500;
     color: rgba(212, 175, 55, 0.9);
-    /* Muted Gold */
     line-height: 1;
 }
 
 canvas {
     display: block;
 }
-/* ===================================
-   BOARD COLOUR OPTIONS
-   =================================== */
 
+/* table color selector dropdown */
 #colour-dropdown-container {
     position: absolute;
     top: 40px;
@@ -917,4 +856,82 @@ canvas {
 /* Remove old panel styles */
 #board-colour-panel {
     display: none;
+}
+
+/* mobile touch improvements */
+@media (hover: none) and (pointer: coarse) {
+    .player-panel,
+    #home-button,
+    .camera-control,
+    #replay-button,
+    #slowmo-button,
+    .colour-option {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    #game-container {
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    #ui-layer {
+        pointer-events: none;
+    }
+    
+    #ui-layer > * {
+        pointer-events: auto;
+    }
+}
+
+/* tablet and mobile */
+@media (max-width: 1024px) {
+    .player-panel {
+        padding: 10px 15px;
+    }
+    
+    .player-name {
+        font-size: 10px;
+    }
+    
+    .player-score {
+        font-size: 20px;
+    }
+    
+    #header-container {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .camera-controls {
+        padding: 8px;
+        gap: 8px;
+    }
+    
+    .camera-control {
+        padding: 6px 10px;
+        font-size: 9px;
+    }
+}
+
+/* mobile only */
+@media (max-width: 768px) {
+    #ui-layer {
+        padding: 10px;
+    }
+    
+    #header-container {
+        width: calc(100% - 20px);
+        max-width: none;
+    }
+    
+    #home-button {
+        padding: 8px 12px;
+        font-size: 9px;
+    }
+    
+    .camera-controls {
+        flex-direction: column;
+    }
 }

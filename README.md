@@ -1,6 +1,6 @@
 # Premium Snooker Game
 
-A professional broadcast-quality snooker simulation built with p5.js and Matter.js.
+A professional snooker simulation built with p5.js and Matter.js.
 
 ## Project Structure
 
@@ -20,27 +20,20 @@ Snooker-game/
 ## Features
 
 ### Game Mechanics
-- **Realistic Physics**: Matter.js engine for accurate ball dynamics
-- **3D Camera**: Manual and auto-snap camera controls
-- **Multiple Modes**: Triangle, Random, and Practice setups
-- **Two Rule Sets**: Standard and Beginner modes
+- Realistic Physics using Matter.js engine
+- 3D Camera with manual and auto-snap controls
+- Multiple setup modes (Triangle, Random, Practice)
+- Two rule sets (Standard and Beginner)
 
 ### Visual Features
-- **5 Table Colors**: Green, Red, Black, Blue, Pink
-- **Shot Replay**: Record and replay last shot
-- **Slow Motion**: Toggle slow-motion playback
-- **Loading Screen**: Animated "ENTERING ARENA" intro
+- 5 table colors to choose from
+- Shot replay system
+- Slow motion playback
+- Animated loading screen
 
 ### Player Features
-- **Score Tracking**: Individual player scores and break counting
-- **Turn Indicators**: Visual cues for active player
-- **Foul System**: Automatic detection and scoring
-- **Frame Counter**: Track completed frames and total shots
+- Individual player scores and break counting
+- Turn indicators
+- Automatic foul detection
+- Frame and shot counter
 
-## Code Documentation
-
-All code files have been professionally commented with:
-- **File Headers**: Describe purpose and features
-- **Section Comments**: Organize code into logical blocks
-- **Inline Comments**: Explain complex logic
-- **Variable Descriptions**: Clear naming and purpose

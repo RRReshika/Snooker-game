@@ -1,31 +1,6 @@
-/* ===================================
-   PREMIUM SNOOKER GAME - MAIN LOGIC
-   
-   This is the core game engine built with p5.js and Matter.js.
-   
-   Key Features:
-   - Realistic physics simulation using Matter.js
-   - 3D camera controls with manual and auto modes
-   - Multiple game modes (Standard, Random, Practice)
-   - Two rule sets (Standard and Beginner)
-   - Shot replay system with slow-motion
-   - Customizable table colors (5 options)
-   - Professional broadcast-style UI
-   - Score tracking and break counting
-   
-   Libraries Used:
-   - p5.js: Graphics rendering and canvas management
-   - Matter.js: 2D physics engine for ball dynamics
-   
-   Author: Student Project
-   Version: 1.0
-   =================================== */
+// Main game file - handles physics and rendering
+// Using p5.js for graphics and Matter.js for physics
 
-// ===================================
-// MATTER.JS MODULE ALIASES
-// ===================================
-
-// Import Matter.js components for easier access
 const Engine = Matter.Engine;
 const World = Matter.World;
 const Bodies = Matter.Bodies;
@@ -34,29 +9,20 @@ const Events = Matter.Events;
 const Vector = Matter.Vector;
 const Composite = Matter.Composite;
 
-const Composite = Matter.Composite;
+let engine, world;
 
-// ===================================
-// PHYSICS ENGINE VARIABLES
-// ===================================
-
-let engine;  // Matter.js physics engine instance
-let world;   // Physics world containing all bodies
-
-// ===================================
-// TABLE AND GAME CONSTANTS
-// ===================================
-
-// Table dimensions in pixels
+// table dimensions
 const TABLE_WIDTH = 800;
 const TABLE_HEIGHT = 400;
-const RAIL_WIDTH = 30;        // Width of cushion rails
-const POCKET_RADIUS = 25;     // Radius of corner and middle pockets
-const BALL_RADIUS = 10;       // Radius of all balls
+const RAIL_WIDTH = 30;
+const POCKET_RADIUS = 25;
+const BALL_RADIUS = 10;
 
-// ===================================
-// GAME STATE VARIABLES
-// ===================================
+// game constants
+const FOUL_PENALTY = 4;
+const SNAP_DELAY = 1000;
+
+// game state
 
 // Arrays storing game objects
 let balls = [];      // All balls currently on table
@@ -67,47 +33,34 @@ let cue;             // Cue stick object
 let impacts = [];    // Visual impact effects
 
 // Scoring and player tracking
-let score = 0;       // Legacy variable (kept for compatibility)
 let scores = { 1: 0, 2: 0 };  // Score for each player
-let currentPlayer = 1;         // Active player (1 or 2)
-let ballsPottedThisTurn = 0;  // Balls potted in current turn
-let currentBreak = 0;          // Points scored in current break
-let foulCommitted = false;     // Whether a foul occurred
-let framesCompleted = 0;       // Total frames played
-let totalShots = 0;            // Total shots taken
+let currentPlayer = 1;
+let ballsPottedThisTurn = 0;
+let currentBreak = 0;
+let foulCommitted = false;
+let framesCompleted = 0;
+let totalShots = 0;
 
-// Game mode and settings
-let currentMode = 1;          // 1=Triangle, 2=Random, 3=Practice
-let isAiming = false;         // Whether player is aiming
-let isShooting = false;       // Whether balls are in motion
-let isPlacingCueBall = true;  // Whether placing cue ball after foul
-let gameRulesMode = 'STANDARD'; // 'STANDARD' or 'BEGINNER'
-let uiActive = false;         // Lock input during UI interaction
+let currentMode = 1; // 1=Triangle, 2=Random, 3=Practice
+let isAiming = false;
+let isShooting = false;
+let isPlacingCueBall = true;
+let gameRulesMode = 'STANDARD';
+let uiActive = false;
 
-// ===================================
-// REPLAY SYSTEM VARIABLES
-// ===================================
+// replay system
+let lastShotRecording = [];
+let isRecording = false;
+let isReplaying = false;
+let replayFrameIndex = 0;
 
-let lastShotRecording = [];  // Stores ball positions for replay
-let isRecording = false;     // Whether currently recording
-let isReplaying = false;     // Whether currently replaying
-let replayFrameIndex = 0;    // Current frame in replay
+let slowMotionEnabled = false;
 
-// ===================================
-// SPECIAL FEATURES
-// ===================================
+// table color options
+let currentTableColour = 'green';
+let tableColourTransition = 0;
+let targetTableColour = 'green';
 
-let slowMotionEnabled = false; // Slow-motion toggle state
-
-// ===================================
-// TABLE COLOR CUSTOMIZATION
-// ===================================
-
-let currentTableColour = 'green';  // Current table color name
-let tableColourTransition = 0;      // Transition progress (0-1)
-let targetTableColour = 'green';    // Target color for transition
-
-// Color presets: center (bright), edge (darker), cushion (medium)
 const TABLE_COLOURS = {
     green: { center: [30, 100, 60], edge: [10, 40, 25], cushion: [20, 70, 40] },
     red: { center: [100, 20, 20], edge: [50, 10, 10], cushion: [80, 15, 15] },
@@ -116,53 +69,55 @@ const TABLE_COLOURS = {
     pink: { center: [255, 120, 180], edge: [230, 90, 150], cushion: [240, 105, 165] }
 };
 
-// ===================================
-// 3D CAMERA VARIABLES
-// ===================================
+// camera control
+let tableGraphics;
+let camAngle = 0;
+let targetCamAngle = 0;
+let camPhi = 0.8;
+let targetCamPhi = 0.8;
+let camRadius = 900;
 
-let tableGraphics;       // 2D graphics buffer for table texture
-let camAngle = 0;        // Current horizontal rotation (radians)
-let targetCamAngle = 0;  // Target rotation for smooth transition
-let camPhi = 0.8;        // Current elevation angle (radians)
-let targetCamPhi = 0.8;  // Target elevation for smooth transition
-let camRadius = 900;     // Distance from camera to table center
+const DEFAULT_CAM_ANGLE = 0;
+const DEFAULT_CAM_PHI = 0.8;
+let isAutoSnapping = false;
+let snapPending = false;
+let snapStartTime = 0;
 
-// Smart camera auto-snap settings
-const DEFAULT_CAM_ANGLE = 0;    // Default horizontal angle
-const DEFAULT_CAM_PHI = 0.8;    // Default elevation angle
-let isAutoSnapping = false;     // Whether auto-snap is active
-let snapPending = false;        // Whether snap is queued
-let snapStartTime = 0;          // Timestamp when snap started
-const SNAP_DELAY = 1000;        // Delay before auto-snap (1 second)
+function preload() {
+    // using basic Web Audio API for sounds
+    // will create simple synth sounds since we don't have audio files
+}
 
-// ===================================
-// SETUP FUNCTION
-// ===================================
-
-/**
- * Initial setup - runs once when program starts
- * Creates canvas, initializes physics engine, and sets up game elements
- */
 function setup() {
-    const canvas = createCanvas(windowWidth, windowHeight, WEBGL);
-    canvas.parent('game-container');
+    // check if libraries loaded
+    if (typeof Matter === 'undefined' || typeof p5 === 'undefined') {
+        showError('Libraries failed to load');
+        return;
+    }
+    
+    try {
+        const canvas = createCanvas(windowWidth, windowHeight, WEBGL);
+        canvas.parent('game-container');
 
-    // Create 2D texture buffer for the table
-    tableGraphics = createGraphics(TABLE_WIDTH, TABLE_HEIGHT);
+        tableGraphics = createGraphics(TABLE_WIDTH, TABLE_HEIGHT);
 
-    // Initialize Matter.js
-    engine = Engine.create();
-    world = engine.world;
+        // setup physics
+        engine = Engine.create();
+        world = engine.world;
 
-    // Increase iterations for better collision stability
-    engine.positionIterations = 10;
-    engine.velocityIterations = 10;
+        // tried different values here - 10 works best for smooth collisions
+        engine.positionIterations = 10;
+        engine.velocityIterations = 10;
 
-    // Disable gravity (top-down view)
-    engine.world.gravity.y = 0;
+        engine.world.gravity.y = 0; // no gravity for top-down view
 
-    setupTable();
-    setupBalls(1);
+        setupTable();
+        setupBalls(1);
+    } catch (error) {
+        console.error('Setup failed:', error);
+        showError('Game initialization failed');
+        return;
+    }
 
     cue = new Cue();
 
@@ -321,6 +276,7 @@ function draw() {
     // Y = -r * cos(phi)
     // Z = r * sin(phi) * cos(theta)
 
+    // took me a while to get this camera math right
     let camX = camRadius * sin(camPhi) * sin(camAngle);
     let camY = -camRadius * cos(camPhi); // Negative because Y is down in WebGL screen coords, but we want 'up' to be negative Y
     let camZ = camRadius * sin(camPhi) * cos(camAngle);
@@ -493,9 +449,7 @@ function keyPressed() {
 }
 
 function mousePressed(event) {
-    // 1. UI Interaction Lock
     if (uiActive || isUIBlocking(event)) {
-        // If we clicked on UI, ensure uiActive is true to block subsequent game logic
         if (isUIBlocking(event)) uiActive = true;
         return;
     }
@@ -503,13 +457,13 @@ function mousePressed(event) {
     let mousePos = getMouseOnTable();
     if (!mousePos) return;
 
-    // 2. Table-bound interaction check
     if (!isMouseOnTable(mousePos)) return;
 
     // Check if placing cue ball
     if (isPlacingCueBall) {
         let localX = mousePos.x;
         let localY = mousePos.y;
+        // console.log('placing at:', localX, localY);
 
         // Check if inside D-Zone
         let dZoneX = TABLE_WIDTH * 0.2;
@@ -1412,7 +1366,7 @@ function toggleRulesDropdown() {
     if (content) {
         let isOpening = content.classList.contains('hidden');
         content.classList.toggle('hidden');
-        uiActive = isOpening; // Set flag based on new state
+        uiActive = isOpening;
     }
 }
 
@@ -1679,5 +1633,25 @@ function changeTableColour(colour) {
     if (TABLE_COLOURS[colour]) {
         targetTableColour = colour;
         tableColourTransition = 0;
+    }
+}
+
+// error handling
+function showError(message) {
+    const loadingScreen = document.getElementById('loading-screen');
+    const errorScreen = document.getElementById('error-screen');
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    if (errorScreen) {
+        errorScreen.style.display = 'flex';
+        console.error(message);
+    }
+}
+
+// responsive canvas
+function windowResized() {
+    try {
+        resizeCanvas(windowWidth, windowHeight);
+    } catch (error) {
+        console.error('Resize failed:', error);
     }
 }

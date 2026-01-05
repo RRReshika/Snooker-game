@@ -1,6 +1,4 @@
-/* ===================================
-   GLOBAL & RESET
-   =================================== */
+/* extensions page styles */
 
 * {
     margin: 0;
@@ -15,10 +13,7 @@ body {
     line-height: 1.6;
 }
 
-/* ===================================
-   HOME BUTTON
-   =================================== */
-
+/* back to home button */
 #home-button {
     position: fixed;
     bottom: 30px;
@@ -51,10 +46,7 @@ body {
     height: 18px;
 }
 
-/* ===================================
-   TOP NAVIGATION
-   =================================== */
-
+/* top navigation bar */
 .top-nav {
     position: fixed;
     top: 0;
@@ -92,10 +84,7 @@ body {
     color: #f5f5f0;
 }
 
-/* ===================================
-   PAGE HEADER
-   =================================== */
-
+/* main header section */
 .page-header {
     padding: 140px 3rem 80px;
     text-align: center;
@@ -129,10 +118,7 @@ body {
     padding: 80px 3rem;
 }
 
-/* ===================================
-   EXTENSION SECTIONS
-   =================================== */
-
+/* extension card styling */
 .extension-section {
     margin-bottom: 4rem;
     padding: 3rem;
@@ -197,6 +183,7 @@ body {
     width: 100%;
 }
 
+/* floating ball icons */
 .ball-icon {
     width: 50px;
     height: 50px;
@@ -376,10 +363,7 @@ body {
     font-weight: 400;
 }
 
-/* ===================================
-   FOOTER
-   =================================== */
-
+/* page footer */
 .page-footer {
     padding: 3rem;
     background: #0a0a0a;
@@ -421,10 +405,7 @@ body {
     color: #b89a62;
 }
 
-/* ===================================
-   RESPONSIVE
-   =================================== */
-
+/* mobile responsive */
 @media (max-width: 768px) {
     .top-nav {
         padding: 1rem 1.5rem;
@@ -478,10 +459,7 @@ body {
     }
 }
 
-/* ===================================
-   ENHANCED ANIMATIONS
-   =================================== */
-
+/* extra animations */
 @keyframes shimmer {
     0% {
         background-position: -1000px 0;
@@ -495,7 +473,7 @@ body {
     perspective: 1000px;
 }
 
-/* Page Load Animation */
+/* page loads in smoothly */
 body {
     opacity: 0;
 }
