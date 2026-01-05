@@ -325,6 +325,22 @@ body {
     line-height: 1;
 }
 
+.rule-ball {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    box-shadow: 
+        inset -4px -4px 12px rgba(0, 0, 0, 0.4),
+        inset 4px 4px 12px rgba(255, 255, 255, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.rule-block:hover .rule-ball {
+    transform: scale(1.15) rotate(20deg);
+}
+
 .rule-title {
     font-size: 1.4rem;
     font-weight: 400;

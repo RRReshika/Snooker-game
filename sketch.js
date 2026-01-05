@@ -48,6 +48,19 @@ let replayFrameIndex = 0;
 // Slow-Motion Toggle State
 let slowMotionEnabled = false;
 
+// Board Colour State
+let currentTableColour = 'green';
+let tableColourTransition = 0;
+let targetTableColour = 'green';
+
+const TABLE_COLOURS = {
+    green: { center: [30, 100, 60], edge: [10, 40, 25], cushion: [20, 70, 40] },
+    red: { center: [100, 20, 20], edge: [50, 10, 10], cushion: [80, 15, 15] },
+    black: { center: [20, 20, 25], edge: [10, 10, 12], cushion: [15, 15, 18] },
+    blue: { center: [20, 50, 90], edge: [10, 25, 50], cushion: [15, 40, 70] },
+    pink: { center: [255, 120, 180], edge: [230, 90, 150], cushion: [240, 105, 165] }
+};
+
 let tableGraphics;
 let camAngle = 0;
 let targetCamAngle = 0;
@@ -88,6 +101,9 @@ function setup() {
 
     // Initialize Rules UI
     updateRulesUI();
+
+    // Initialize Board Colour Options
+    initBoardColourOptions();
 
     // Click outside to close dropdown
     window.addEventListener('click', (e) => {
@@ -488,18 +504,49 @@ function isMouseOnTable(pos) {
 
 function drawTableToTexture() {
     let pg = tableGraphics;
+    
+    // Clear the graphics buffer
+    pg.clear();
+    pg.background(0, 0, 0, 0);
+
+    // Smooth colour transition
+    if (currentTableColour !== targetTableColour) {
+        tableColourTransition += 0.05;
+        if (tableColourTransition >= 1) {
+            currentTableColour = targetTableColour;
+            tableColourTransition = 0;
+        }
+    }
+
+    // Get current and target colours
+    let currentColours = TABLE_COLOURS[currentTableColour];
+    let targetColours = TABLE_COLOURS[targetTableColour];
+    
+    // Interpolate colours for smooth transition
+    let t = tableColourTransition;
+    let centerR = lerp(currentColours.center[0], targetColours.center[0], t);
+    let centerG = lerp(currentColours.center[1], targetColours.center[1], t);
+    let centerB = lerp(currentColours.center[2], targetColours.center[2], t);
+    
+    let edgeR = lerp(currentColours.edge[0], targetColours.edge[0], t);
+    let edgeG = lerp(currentColours.edge[1], targetColours.edge[1], t);
+    let edgeB = lerp(currentColours.edge[2], targetColours.edge[2], t);
+    
+    let cushionR = lerp(currentColours.cushion[0], targetColours.cushion[0], t);
+    let cushionG = lerp(currentColours.cushion[1], targetColours.cushion[1], t);
+    let cushionB = lerp(currentColours.cushion[2], targetColours.cushion[2], t);
 
     // Draw Felt (Gradient)
     let ctx = pg.drawingContext;
     let gradient = ctx.createRadialGradient(TABLE_WIDTH / 2, TABLE_HEIGHT / 2, 50, TABLE_WIDTH / 2, TABLE_HEIGHT / 2, TABLE_WIDTH);
-    gradient.addColorStop(0, 'rgb(30, 100, 60)'); // Deep Emerald Center
-    gradient.addColorStop(1, 'rgb(10, 40, 25)');  // Darker Forest Edges
+    gradient.addColorStop(0, `rgb(${centerR}, ${centerG}, ${centerB})`);
+    gradient.addColorStop(1, `rgb(${edgeR}, ${edgeG}, ${edgeB})`);
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, TABLE_WIDTH, TABLE_HEIGHT);
 
-    // Draw Cushions (Slightly lighter than edges to pop)
-    pg.fill(20, 70, 40);
+    // Draw Cushions
+    pg.fill(cushionR, cushionG, cushionB);
     pg.noStroke();
     // Top
     pg.rect(0, 0, TABLE_WIDTH, RAIL_WIDTH / 2);
@@ -1525,5 +1572,45 @@ function toggleSlowMotion() {
         engine.timing.timeScale = 1.0; // Normal speed
         btn.textContent = 'SLOW-MO: OFF';
         btn.classList.remove('active');
+    }
+}
+
+// Board Colour Options Functions
+function initBoardColourOptions() {
+    // Click outside to close dropdown
+    window.addEventListener('click', (e) => {
+        let container = document.getElementById('colour-dropdown-container');
+        let content = document.getElementById('colour-content');
+        if (container && !container.contains(e.target)) {
+            if (content && !content.classList.contains('hidden')) {
+                content.classList.add('hidden');
+            }
+        }
+    });
+}
+
+function toggleColourDropdown() {
+    let content = document.getElementById('colour-content');
+    content.classList.toggle('hidden');
+}
+
+function selectTableColour(colour) {
+    if (TABLE_COLOURS[colour]) {
+        targetTableColour = colour;
+        tableColourTransition = 0;
+        
+        // Update display name
+        let colourName = colour.charAt(0).toUpperCase() + colour.slice(1);
+        document.getElementById('current-colour-name').textContent = colourName.toUpperCase();
+        
+        // Close dropdown
+        document.getElementById('colour-content').classList.add('hidden');
+    }
+}
+
+function changeTableColour(colour) {
+    if (TABLE_COLOURS[colour]) {
+        targetTableColour = colour;
+        tableColourTransition = 0;
     }
 }

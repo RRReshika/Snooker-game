@@ -77,6 +77,37 @@
             </div>
         </div>
 
+        <!-- Board Colour Dropdown -->
+        <div id="colour-dropdown-container">
+            <div id="colour-header" onclick="toggleColourDropdown()">
+                <span>TABLE: </span>
+                <span id="current-colour-name">GREEN</span>
+                <span> ▾</span>
+            </div>
+            <div id="colour-content" class="hidden">
+                <div class="colour-option" data-colour="green" onclick="selectTableColour('green')">
+                    <span class="colour-swatch-small" style="background: rgb(30, 100, 60);"></span>
+                    <span>Green</span>
+                </div>
+                <div class="colour-option" data-colour="red" onclick="selectTableColour('red')">
+                    <span class="colour-swatch-small" style="background: rgb(100, 20, 20);"></span>
+                    <span>Red</span>
+                </div>
+                <div class="colour-option" data-colour="black" onclick="selectTableColour('black')">
+                    <span class="colour-swatch-small" style="background: rgb(20, 20, 25);"></span>
+                    <span>Black</span>
+                </div>
+                <div class="colour-option" data-colour="blue" onclick="selectTableColour('blue')">
+                    <span class="colour-swatch-small" style="background: rgb(20, 50, 90);"></span>
+                    <span>Blue</span>
+                </div>
+                <div class="colour-option" data-colour="pink" onclick="selectTableColour('pink')">
+                    <span class="colour-swatch-small" style="background: rgb(255, 120, 180);"></span>
+                    <span>Pink</span>
+                </div>
+            </div>
+        </div>
+
     </div>
     </div>
 

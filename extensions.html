@@ -8,18 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    
-    <!-- Home Button -->
-    <a href="home.html" id="home-button">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span>HOME</span>
-    </a>
 
     <nav class="top-nav">
         <a href="home.html" class="nav-link">← Back to Home</a>
-        <div class="nav-title">Premium Snooker</div>
+        <div class="nav-title">3D Snooker Experience</div>
     </nav>
 
     <header class="page-header">
@@ -33,6 +25,7 @@
         <section class="extension-section">
             <div class="extension-header">
                 <span class="extension-number">01</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000);"></div>
                 <h2 class="extension-title">Advanced Physics Engine</h2>
             </div>
             <div class="extension-content">
@@ -56,6 +49,7 @@
         <section class="extension-section">
             <div class="extension-header">
                 <span class="extension-number">02</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #ffff66, #cccc00);"></div>
                 <h2 class="extension-title">Professional Aiming System</h2>
             </div>
             <div class="extension-content">
@@ -79,6 +73,7 @@
         <section class="extension-section">
             <div class="extension-header">
                 <span class="extension-number">03</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #66ff66, #00aa00);"></div>
                 <h2 class="extension-title">Broadcast-Style Scoring</h2>
             </div>
             <div class="extension-content">
@@ -102,6 +97,7 @@
         <section class="extension-section">
             <div class="extension-header">
                 <span class="extension-number">04</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #aa7744, #774422);"></div>
                 <h2 class="extension-title">Official Rules Engine</h2>
             </div>
             <div class="extension-content">
@@ -126,6 +122,7 @@
         <section class="extension-section">
             <div class="extension-header">
                 <span class="extension-number">05</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #6666ff, #0000cc);"></div>
                 <h2 class="extension-title">Broadcast Interface Design</h2>
             </div>
             <div class="extension-content">
@@ -150,6 +147,7 @@
         <section class="extension-section">
             <div class="extension-header">
                 <span class="extension-number">06</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #ff99cc, #ff3399);"></div>
                 <h2 class="extension-title">Multiple Game Modes</h2>
             </div>
             <div class="extension-content">
@@ -173,6 +171,7 @@
         <section class="extension-section">
             <div class="extension-header">
                 <span class="extension-number">07</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #555555, #000000);"></div>
                 <h2 class="extension-title">Automated Ball Management</h2>
             </div>
             <div class="extension-content">
@@ -196,6 +195,7 @@
         <section class="extension-section">
             <div class="extension-header">
                 <span class="extension-number">08</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #ffffff, #cccccc);"></div>
                 <h2 class="extension-title">Immersive Audio & Feedback</h2>
             </div>
             <div class="extension-content">
@@ -216,6 +216,34 @@
             </div>
         </section>
 
+        <!-- Extension 9: Board Colour Options -->
+        <section class="extension-section">
+            <div class="extension-header">
+                <span class="extension-number">09</span>
+                <div class="ball-icon" style="background: radial-gradient(circle at 30% 30%, #ffaa44, #ff6600);"></div>
+                <h2 class="extension-title">Board Colour Customisation</h2>
+            </div>
+            <div class="extension-content">
+                <h3 class="content-subtitle">What Was Added</h3>
+                <p>A premium colour selector allowing players to switch the table felt between five preset options: Green (default), Red, Black, Blue, and Pink. Changes apply instantly with smooth colour transitions.</p>
+                
+                <h3 class="content-subtitle">Why It Improves Personalisation</h3>
+                <p>Enables players to customise their playing environment while maintaining professional aesthetics. Different colours can reduce eye strain during extended sessions and add variety to the visual experience without compromising realism.</p>
+                
+                <h3 class="content-subtitle">Features & Implementation</h3>
+                <ul class="details-list">
+                    <li>Five professionally selected felt colours with proper contrast</li>
+                    <li>Smooth fade transitions between colour changes (0.05 per frame)</li>
+                    <li>Selective colouring - only affects table felt, preserves ball and UI colours</li>
+                    <li>Adaptive cushion and edge colouring for realistic appearance</li>
+                    <li>Non-intrusive settings panel in bottom-right corner</li>
+                    <li>Premium button design matching broadcast theme</li>
+                    <li>Instant application without game restart</li>
+                    <li>Maintains proper lighting and shadow effects across all colours</li>
+                </ul>
+            </div>
+        </section>
+
     </main>
 
     <footer class="page-footer">
@@ -228,5 +256,6 @@
         </div>
     </footer>
 
+    <script src="extensions-script.js"></script>
 </body>
 </html>
