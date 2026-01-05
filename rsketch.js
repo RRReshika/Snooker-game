@@ -1,3 +1,61 @@
+
+/*Graphics programming Midterm Project  
+Student Name : Rajagopal Raja Reshika
+Student Number : 240621557
+ 
+COMMENTARY :
+A. OVERVIEW 
+This project presents an interactive 3D snooker simulation built using p5.js alongside the Matter.js physics engine.
+The primary objective was to recreate the experience of a real snooker table by combining realistic physical behaviour
+with intuitive user interaction. Matter.js is utilised to manage key physics elements such as collision handling, friction, 
+and energy restitution, allowing the balls to move and respond in a natural and believable manner.
+In addition, the application includes user-controlled cue mechanics and supports multiple gameplay modes.The visual 
+interface adopts a broadcast-style design to enhance realism while ensuring clarity and ease of use throughout gameplay.
+
+B. DESIGN AND INTERACTION 
+The cue interaction was designed using a combination of mouse and keyboard input to provide greater precision and control
+compared to a single-input approach. The mouse is used to aim the cue direction, while keyboard input controls shot power, 
+ensuring deliberate user input and preventing the cue from behaving like an elastic band.
+
+Matter.js was used to manage the physics system, providing reliable collision detection and allowing independent tuning 
+of restitution and friction for balls and cushions. This enabled realistic energy transfer, ball deceleration, 
+and rebound behaviour without requiring manual collision calculations, allowing greater focus on interaction
+and visual feedback.
+
+To enhance spatial perception and interaction clarity, a 3D model was incorporated into the design of the application. The 
+3D representation improves depth awareness and helps users better judge ball positions, movement direction, and shot 
+alignment. Camera perspective and lighting were carefully controlled to ensure the model complements the professional 
+broadcast-style interface while remaining visually consistent with the physics-based behaviour of the game.
+
+C.GAME MODES AND VISUAL EFFECTS 
+Two gameplay difficulty modes were implemented: Regular and Beginner. The Beginner mode is designed to assist 
+new players by providing a more forgiving and guided experience, while the Regular mode maintains standard gameplay
+behaviour for a more realistic challenge. In all modes, the cue ball respawns at a default central position 
+when required, ensuring consistent game flow and preventing unintended placement advantages.
+
+Multiple table configurations were implemented to demonstrate different ball layouts, including standard and 
+practice-based arrangements. Visual feedback was enhanced through animated ball trails that indicate speed and 
+movement direction, as well as a net-style highlight effect when a ball is successfully potted. These visual cues 
+improve gameplay clarity while reinforcing player actions without distracting from the core simulation.
+
+D. EXTENSION AND EXTRA FEATURES 
+Several extensions were implemented to enhance gameplay feedback, usability, and presentation beyond the base 
+requirements. A dynamic game status system provides contextual information during play, while short commentary 
+feedback is generated after each shot to inform the player of outcomes and interaction clarity.
+
+Customisation features include selectable table felt colours and optional slow-motion shot playback, allowing users to 
+better observe ball movement and collision behaviour. A replay feature was added to review the most recent successful pot, 
+supporting learning and shot analysis. Shot control was further enhanced through a power circle indicator and mouse-based 
+3D rotation and tilt of the table view, improving spatial awareness during aiming.
+
+Additional visual extensions include a ball stack displayed along the left side of the interface, where potted balls roll 
+to the base of the screen to indicate progress. A scroll-based animated home page with integrated rules and a dedicated extensions
+page was also implemented to maintain a clean, professional user experience.
+
+
+
+*/
+
 // Main game file - handles physics and rendering
 // Using p5.js for graphics and Matter.js for physics
 
