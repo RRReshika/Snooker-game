@@ -1,3 +1,6 @@
+Student Name : Rajagopal Raja Reshika
+Student Number : 240621557
+
 # Premium Snooker Game
 
 A professional broadcast-quality snooker simulation built with p5.js and Matter.js.
